@@ -271,9 +271,9 @@ function NavPill({ icon, color, label }) {
 ───────────────────────────────────────────────────────────────── */
 function HeroSection(props) {
   return (
-    <section className="flex flex-col lg:flex-row items-start gap-8 px-6 md:px-12 xl:px-14 pt-8 pb-12">
+    <section className="flex flex-col md:flex-row items-start gap-8 px-6 md:px-12 xl:px-14 pt-8 pb-12">
       <HeroCopy />
-      <div className="card-in w-full lg:shrink-0 lg:w-[320px] xl:w-[360px]">
+      <div className="card-in w-full md:shrink-0 md:w-[300px] lg:w-[320px] xl:w-[360px]">
         <LoginCard {...props} />
       </div>
     </section>
