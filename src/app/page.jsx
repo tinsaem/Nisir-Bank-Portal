@@ -6,14 +6,7 @@ import { useEffect, useState } from "react";
    Constants
 ───────────────────────────────────────────────────────────────── */
 const LOGIN_INIT    = { employeeId: "", password: "", rememberMe: false };
-const REGISTER_INIT = { fullName: "", employeeId: "", department: "", email: "", phone: "" };
-
-const DEPARTMENTS = [
-  "Corporate Banking", "Retail Banking", "Treasury & Finance",
-  "Risk & Compliance", "Information Technology", "Human Resources",
-  "Legal & Secretariat", "Internal Audit", "Operations",
-  "Customer Service", "Marketing & Communications", "Executive Office",
-];
+const REGISTER_INIT = { fullName: "", employeeId: "", phone: "" };
 
 const ANNOUNCEMENTS = [
   {
@@ -133,7 +126,7 @@ export default function Home() {
   async function handleRegister(e) {
     e.preventDefault();
     setRegMsg({ type: "", text: "" });
-    if (!reg.fullName.trim() || !reg.employeeId.trim() || !reg.department || !reg.email.trim()) {
+    if (!reg.fullName.trim() || !reg.employeeId.trim() || !reg.phone.trim()) {
       setRegMsg({ type: "err", text: "Please complete all required fields." });
       return;
     }
@@ -142,13 +135,17 @@ export default function Home() {
       const res  = await fetch("/api/request-credentials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reg),
+        body: JSON.stringify({
+          fullName:   reg.fullName,
+          employeeId: reg.employeeId,
+          phone:      reg.phone,
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
         setRegMsg({ type: "err", text: data.message || "Request failed. Please try again." });
       } else {
-        setRegMsg({ type: "ok", text: "Your request has been submitted. Security Operations will contact you within 24 hours." });
+        setRegMsg({ type: "ok", text: data.message });
         setReg(REGISTER_INIT);
       }
     } catch {
@@ -224,7 +221,7 @@ function ParticleField({ particles }) {
 ───────────────────────────────────────────────────────────────── */
 function Navbar() {
   return (
-    <nav className="fade-left flex items-center gap-6 px-8 xl:px-14 pt-8 pb-4 shrink-0">
+    <nav className="fade-left flex items-center gap-6 px-6 md:px-12 xl:px-14 pt-8 pb-4 shrink-0">
       {/* ── left: logo + bank identity + status pills ── */}
       <div className="flex items-center gap-4 shrink-0">
         <BankLogo />
@@ -241,7 +238,7 @@ function Navbar() {
       </div>
 
       {/* ── right: announcement board, same column width as login card ── */}
-      <div className="ml-auto shrink-0 w-[380px] xl:w-[410px]">
+      <div className="ml-auto shrink-0 hidden md:block w-[320px] xl:w-[360px]">
         <AnnouncementBoard />
       </div>
     </nav>
@@ -274,9 +271,9 @@ function NavPill({ icon, color, label }) {
 ───────────────────────────────────────────────────────────────── */
 function HeroSection(props) {
   return (
-    <section className="flex items-start gap-8 px-8 xl:px-14 pt-8 pb-12">
+    <section className="flex flex-col lg:flex-row items-start gap-8 px-6 md:px-12 xl:px-14 pt-8 pb-12">
       <HeroCopy />
-      <div className="card-in shrink-0 w-[380px] xl:w-[410px]">
+      <div className="card-in w-full lg:shrink-0 lg:w-[320px] xl:w-[360px]">
         <LoginCard {...props} />
       </div>
     </section>
@@ -431,7 +428,7 @@ function LoginCard({ tab, switchTab, login, setLogin, showPwd, setShowPwd, login
         <CardHeader tab={tab} switchTab={switchTab} />
 
         {/* Form area — card-form restores dark text on white bg */}
-        <div className="card-form px-7 pb-7 pt-6">
+        <div className="card-form px-5 pb-5 pt-4">
           {tab === "login" ? (
             <SignInForm
               login={login}
@@ -462,7 +459,7 @@ function LoginCard({ tab, switchTab, login, setLogin, showPwd, setShowPwd, login
 
 function CardHeader({ tab, switchTab }) {
   return (
-    <div className="card-header relative overflow-hidden px-7 py-6">
+    <div className="card-header relative overflow-hidden px-5 py-5">
       {/* decorative orbs */}
       <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/10" />
       <div className="pointer-events-none absolute right-4 top-4 h-16 w-16 rounded-full bg-white/5" />
@@ -505,7 +502,7 @@ function TabButton({ active, icon, label, onClick }) {
 
 function CardFooter() {
   return (
-    <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-7 py-3">
+    <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-5 py-3">
       <p className="text-[11px] text-gray-400">© 2026 Nisir Bank S.C.</p>
       <div className="flex gap-3 text-[11px]">
         <a href="#" className="text-gray-400 hover:text-blue-700 transition-colors">Privacy</a>
@@ -596,10 +593,16 @@ function SignInForm({ login, setLogin, showPwd, setShowPwd, loginErr, loginLoad,
 function RegisterForm({ reg, setReg, regMsg, regLoad, handleRegister, switchTab }) {
   return (
     <form onSubmit={handleRegister} className="space-y-4">
-      <InfoBanner>
-        <strong>New to Nisir Bank?</strong> Submit this form to request your SETA portal credentials.
-        Your details will be verified against HR records and your login will be issued within 24 hours.
-      </InfoBanner>
+      {/* How it works */}
+      <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-[12px] text-sky-800 leading-relaxed space-y-1">
+        <p className="font-bold text-sky-900">How credential issuance works</p>
+        <ol className="list-decimal list-inside space-y-1 text-sky-800">
+          <li>Enter the Employee ID assigned to you by HR.</li>
+          <li>Provide your full name and registered phone number for identity verification.</li>
+          <li>The system dispatches a temporary password to your organizational email (<span className="font-semibold">name@nisirbank.com</span>).</li>
+          <li>Sign in using your Employee ID and the temporary password, then set a new one.</li>
+        </ol>
+      </div>
 
       {regMsg.text && <StatusMessage type={regMsg.type} text={regMsg.text} />}
 
@@ -609,60 +612,47 @@ function RegisterForm({ reg, setReg, regMsg, regLoad, handleRegister, switchTab 
           type="text"
           placeholder="e.g. Abebe Girma"
           className="inp"
+          autoComplete="name"
           value={reg.fullName}
           onChange={(e) => setReg({ ...reg, fullName: e.target.value })}
         />
       </FormField>
 
-      <FormField label="Assigned Employee ID *" htmlFor="reg-emp-id" icon="badge">
+      <FormField label="Employee ID *" htmlFor="reg-emp-id" icon="badge">
         <input
           id="reg-emp-id"
           type="text"
-          placeholder="From your HR appointment letter"
+          placeholder="As shown on your HR appointment letter"
           className="inp"
+          autoComplete="off"
           value={reg.employeeId}
           onChange={(e) => setReg({ ...reg, employeeId: e.target.value })}
         />
       </FormField>
 
-      <FormField label="Department *" htmlFor="department" icon="apartment">
-        <select
-          id="department"
-          className="inp inp-select"
-          value={reg.department}
-          onChange={(e) => setReg({ ...reg, department: e.target.value })}
-        >
-          <option value="">Select your department</option>
-          {DEPARTMENTS.map((d) => (
-            <option key={d} value={d}>{d}</option>
-          ))}
-        </select>
-      </FormField>
-
-      <FormField label="Work Email *" htmlFor="work-email" icon="mail">
+      <FormField label="Phone Number *" htmlFor="reg-phone" icon="phone">
         <input
-          id="work-email"
-          type="email"
-          placeholder="name@nisirbank.com"
-          className="inp"
-          value={reg.email}
-          onChange={(e) => setReg({ ...reg, email: e.target.value })}
-        />
-      </FormField>
-
-      <FormField label="Phone Number" htmlFor="phone" icon="phone">
-        <input
-          id="phone"
+          id="reg-phone"
           type="tel"
-          placeholder="Optional — for follow-up"
+          placeholder="e.g. +251 91 234 5678"
           className="inp"
+          autoComplete="tel"
           value={reg.phone}
           onChange={(e) => setReg({ ...reg, phone: e.target.value })}
         />
       </FormField>
 
-      <PrimaryButton loading={regLoad} loadLabel="Submitting…" icon="send">
-        Submit Credential Request
+      {/* Security note */}
+      <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[11px] text-amber-800 leading-relaxed">
+        <span className="material-symbols-outlined filled text-base text-amber-500 shrink-0 mt-0.5">lock</span>
+        <span>
+          Your temporary password will be sent <strong>only</strong> to your pre-registered
+          Nisir Bank organizational email. Never share your credentials with anyone.
+        </span>
+      </div>
+
+      <PrimaryButton loading={regLoad} loadLabel="Sending credentials…" icon="mark_email_read">
+        Send My Credentials
       </PrimaryButton>
 
       <p className="text-center text-[11px] text-gray-400 pt-1">
@@ -684,7 +674,7 @@ function RegisterForm({ reg, setReg, regMsg, regLoad, handleRegister, switchTab 
 ───────────────────────────────────────────────────────────────── */
 function AboutSection() {
   return (
-    <section className="px-8 xl:px-14 py-10 section-divider">
+    <section className="px-6 md:px-12 xl:px-14 py-10 section-divider">
       <p className="section-label">About the Bank</p>
       <h2 className="section-h2">A New Chapter in Ethiopian Banking</h2>
 
@@ -729,7 +719,7 @@ function VmoSection() {
   ];
 
   return (
-    <section className="px-8 xl:px-14 py-10 section-divider">
+    <section className="px-6 md:px-12 xl:px-14 py-10 section-divider">
       <p className="section-label">Strategic Direction</p>
       <h2 className="section-h2">Vision, Mission &amp; Objectives</h2>
 
@@ -806,7 +796,7 @@ function SetaSection() {
   const accessTags = ["All Branches", "All Departments", "All Seniority Levels", "Onboarding & Ongoing"];
 
   return (
-    <section className="px-8 xl:px-14 py-10 section-divider">
+    <section className="px-6 md:px-12 xl:px-14 py-10 section-divider">
       <p className="section-label">About This Portal</p>
       <h2 className="section-h2">What is the SETA Portal?</h2>
 
@@ -876,7 +866,7 @@ function AccessCard({ tags }) {
 ───────────────────────────────────────────────────────────────── */
 function PageFooter() {
   return (
-    <footer className="px-8 xl:px-14 py-6 section-divider mt-auto">
+    <footer className="px-6 md:px-12 xl:px-14 py-6 section-divider mt-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p className="text-xs text-white/50">
           © 2026 Nisir Bank S.C. · Licensed by the National Bank of Ethiopia · All rights reserved
