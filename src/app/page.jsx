@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
    Constants
 ───────────────────────────────────────────────────────────────── */
 const LOGIN_INIT    = { employeeId: "", password: "", rememberMe: false };
-const REGISTER_INIT = { fullName: "", employeeId: "", phone: "" };
+const REGISTER_INIT = { employeeId: ""};
 
 const ANNOUNCEMENTS = [
   {
@@ -124,35 +124,56 @@ export default function Home() {
   }
 
   async function handleRegister(e) {
-    e.preventDefault();
-    setRegMsg({ type: "", text: "" });
-    if (!reg.fullName.trim() || !reg.employeeId.trim() || !reg.phone.trim()) {
-      setRegMsg({ type: "err", text: "Please complete all required fields." });
-      return;
-    }
-    setRegLoad(true);
-    try {
-      const res  = await fetch("/api/request-credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName:   reg.fullName,
-          employeeId: reg.employeeId,
-          phone:      reg.phone,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setRegMsg({ type: "err", text: data.message || "Request failed. Please try again." });
-      } else {
-        setRegMsg({ type: "ok", text: data.message });
-        setReg(REGISTER_INIT);
-      }
-    } catch {
-      setRegMsg({ type: "err", text: "Could not reach the server. Please try again." });
-    }
-    setRegLoad(false);
+  e.preventDefault();
+
+  setRegMsg({ type: "", text: "" });
+
+  if (!reg.employeeId.trim()) {
+    setRegMsg({
+      type: "err",
+      text: "Please enter your Employee ID.",
+    });
+    return;
   }
+
+  setRegLoad(true);
+
+  try {
+    const res = await fetch("/api/request-credentials", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        employeeId: reg.employeeId.trim(),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setRegMsg({
+        type: "err",
+        text: data.message || "Request failed. Please try again.",
+      });
+    } else {
+      setRegMsg({
+        type: "ok",
+        text: data.message,
+      });
+
+      setReg(REGISTER_INIT);
+    }
+  } catch {
+    setRegMsg({
+      type: "err",
+      text: "Could not reach the server. Please try again.",
+    });
+  }
+
+  setRegLoad(false);
+}
+ 
 
   return (
     <>
@@ -596,27 +617,17 @@ function RegisterForm({ reg, setReg, regMsg, regLoad, handleRegister, switchTab 
       {/* How it works */}
       <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-[12px] text-sky-800 leading-relaxed space-y-1">
         <p className="font-bold text-sky-900">How credential issuance works</p>
-        <ol className="list-decimal list-inside space-y-1 text-sky-800">
-          <li>Enter the Employee ID assigned to you by HR.</li>
-          <li>Provide your full name and registered phone number for identity verification.</li>
-          <li>The system dispatches a temporary password to your organizational email (<span className="font-semibold">name@nisirbank.com</span>).</li>
-          <li>Sign in using your Employee ID and the temporary password, then set a new one.</li>
-        </ol>
+     <ol className="list-decimal list-inside space-y-1 text-sky-800">
+  <li>Enter the Employee ID assigned to you by HR.</li>
+  <li>The system verifies your Employee ID against HR records.</li>
+  <li>A temporary password is sent to your organizational email.</li>
+  <li>Sign in using your Employee ID and the temporary password.</li>
+</ol>
       </div>
 
       {regMsg.text && <StatusMessage type={regMsg.type} text={regMsg.text} />}
 
-      <FormField label="Full Name *" htmlFor="full-name" icon="person">
-        <input
-          id="full-name"
-          type="text"
-          placeholder="e.g. Abebe Girma"
-          className="inp"
-          autoComplete="name"
-          value={reg.fullName}
-          onChange={(e) => setReg({ ...reg, fullName: e.target.value })}
-        />
-      </FormField>
+      
 
       <FormField label="Employee ID *" htmlFor="reg-emp-id" icon="badge">
         <input
@@ -630,17 +641,7 @@ function RegisterForm({ reg, setReg, regMsg, regLoad, handleRegister, switchTab 
         />
       </FormField>
 
-      <FormField label="Phone Number *" htmlFor="reg-phone" icon="phone">
-        <input
-          id="reg-phone"
-          type="tel"
-          placeholder="e.g. +251 91 234 5678"
-          className="inp"
-          autoComplete="tel"
-          value={reg.phone}
-          onChange={(e) => setReg({ ...reg, phone: e.target.value })}
-        />
-      </FormField>
+     
 
       {/* Security note */}
       <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[11px] text-amber-800 leading-relaxed">
