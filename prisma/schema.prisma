@@ -26,3 +26,14 @@ model EmployeeAccount {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 }
+
+// Read-only mirror of the HR system. Seeded/synced externally; never written by this app.
+model HrEmployee {
+  id         String   @id @default(cuid())
+  employeeId String   @unique
+  fullName   String
+  email      String
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

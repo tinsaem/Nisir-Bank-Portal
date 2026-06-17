@@ -242,7 +242,7 @@ function ParticleField({ particles }) {
 ───────────────────────────────────────────────────────────────── */
 function Navbar() {
   return (
-    <nav className="fade-left flex items-center gap-6 px-6 md:px-12 xl:px-14 pt-8 pb-4 shrink-0">
+    <nav className="fade-left flex items-center gap-6 px-6 md:px-16 xl:px-28 pt-8 pb-4 shrink-0">
       {/* ── left: logo + bank identity + status pills ── */}
       <div className="flex items-center gap-4 shrink-0">
         <BankLogo />
@@ -292,7 +292,7 @@ function NavPill({ icon, color, label }) {
 ───────────────────────────────────────────────────────────────── */
 function HeroSection(props) {
   return (
-    <section className="flex flex-col md:flex-row items-start gap-8 px-6 md:px-12 xl:px-14 pt-8 pb-12">
+    <section className="flex flex-col md:flex-row items-start gap-8 px-6 md:px-16 xl:px-28 pt-8 pb-12">
       <HeroCopy />
       <div className="card-in w-full md:shrink-0 md:w-[300px] lg:w-[320px] xl:w-[360px]">
         <LoginCard {...props} />
@@ -614,17 +614,6 @@ function SignInForm({ login, setLogin, showPwd, setShowPwd, loginErr, loginLoad,
 function RegisterForm({ reg, setReg, regMsg, regLoad, handleRegister, switchTab }) {
   return (
     <form onSubmit={handleRegister} className="space-y-4">
-      {/* How it works */}
-      <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-[12px] text-sky-800 leading-relaxed space-y-1">
-        <p className="font-bold text-sky-900">How credential issuance works</p>
-     <ol className="list-decimal list-inside space-y-1 text-sky-800">
-  <li>Enter the Employee ID assigned to you by HR.</li>
-  <li>The system verifies your Employee ID against HR records.</li>
-  <li>A temporary password is sent to your organizational email.</li>
-  <li>Sign in using your Employee ID and the temporary password.</li>
-</ol>
-      </div>
-
       {regMsg.text && <StatusMessage type={regMsg.type} text={regMsg.text} />}
 
       
@@ -675,7 +664,7 @@ function RegisterForm({ reg, setReg, regMsg, regLoad, handleRegister, switchTab 
 ───────────────────────────────────────────────────────────────── */
 function AboutSection() {
   return (
-    <section className="px-6 md:px-12 xl:px-14 py-10 section-divider">
+    <section className="px-6 md:px-16 xl:px-28 py-10 section-divider">
       <p className="section-label">About the Bank</p>
       <h2 className="section-h2">A New Chapter in Ethiopian Banking</h2>
 
@@ -720,7 +709,7 @@ function VmoSection() {
   ];
 
   return (
-    <section className="px-6 md:px-12 xl:px-14 py-10 section-divider">
+    <section className="px-6 md:px-16 xl:px-28 py-10 section-divider">
       <p className="section-label">Strategic Direction</p>
       <h2 className="section-h2">Vision, Mission &amp; Objectives</h2>
 
@@ -797,7 +786,7 @@ function SetaSection() {
   const accessTags = ["All Branches", "All Departments", "All Seniority Levels", "Onboarding & Ongoing"];
 
   return (
-    <section className="px-6 md:px-12 xl:px-14 py-10 section-divider">
+    <section className="px-6 md:px-16 xl:px-28 py-10 section-divider">
       <p className="section-label">About This Portal</p>
       <h2 className="section-h2">What is the SETA Portal?</h2>
 
@@ -867,7 +856,7 @@ function AccessCard({ tags }) {
 ───────────────────────────────────────────────────────────────── */
 function PageFooter() {
   return (
-    <footer className="px-6 md:px-12 xl:px-14 py-6 section-divider mt-auto">
+    <footer className="px-6 md:px-16 xl:px-28 py-6 section-divider mt-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p className="text-xs text-white/50">
           © 2026 Nisir Bank S.C. · Licensed by the National Bank of Ethiopia · All rights reserved
