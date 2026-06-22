@@ -242,14 +242,14 @@ function ParticleField({ particles }) {
 ───────────────────────────────────────────────────────────────── */
 function Navbar() {
   return (
-    <nav className="fade-left flex items-center gap-6 px-6 md:px-16 xl:px-28 pt-8 pb-4 shrink-0">
+    <nav className="fade-left flex items-start gap-6 px-6 md:px-16 xl:px-28 pt-8 pb-4 shrink-0">
       {/* ── left: logo + bank identity + status pills ── */}
       <div className="flex items-center gap-4 shrink-0">
         <BankLogo />
 
         <div>
           <p className="text-sm font-bold text-white leading-tight">Nisir Bank S.C.</p>
-          <p className="text-[11px] font-semibold text-white/60">Est. Ethiopian Year 2019</p>
+          <p className="text-[11.5px] font-semibold text-white/60">Est. Ethiopian Year 2019</p>
         </div>
 
         <div className="mx-2 h-6 w-px bg-white/20 hidden sm:block" />
@@ -268,9 +268,11 @@ function Navbar() {
 
 function BankLogo() {
   return (
-    <div className="flex h-12 w-12 items-center justify-center rounded-2xl overflow-hidden bg-white shadow-lg border border-white/30">
-      <img src="/images/nisir_bank_logo.svg" alt="Nisir Bank S.C." className="h-11 w-11 object-contain" />
-    </div>
+    <img
+      src="/images/nisir_bank_logo.svg"
+      alt="Nisir Bank S.C."
+      className="h-20 w-20 rounded-2xl border border-white/25 bg-white/15 backdrop-blur-sm shadow-lg object-contain p-1.5"
+    />
   );
 }
 
@@ -282,7 +284,7 @@ function NavPill({ icon, color, label }) {
   return (
     <div className={`hidden sm:flex items-center gap-2 rounded-full border px-4 py-1.5 backdrop-blur-sm ${colors[color]}`}>
       <span className={`material-symbols-outlined filled text-sm ${colors[color].split(" ")[2]}`}>{icon}</span>
-      <span className="text-[10px] font-bold uppercase tracking-widest text-white/85">{label}</span>
+      <span className="text-[10.5px] font-bold uppercase tracking-widest text-white/85">{label}</span>
     </div>
   );
 }
@@ -313,7 +315,7 @@ function HeroCopy() {
     <div className="fade-left flex-1 pt-2">
       <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 mb-6 backdrop-blur-sm">
         <span className="material-symbols-outlined filled text-sm text-sky-300">shield</span>
-        <span className="text-[11px] font-bold uppercase tracking-widest text-white/90">
+        <span className="text-[11.5px] font-bold uppercase tracking-widest text-white/90">
           SETA Employee Training Portal
         </span>
       </div>
@@ -390,7 +392,7 @@ function AnnouncementBoard() {
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined filled text-base text-amber-300">campaign</span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/60">
+          <span className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-white/60">
             Notices &amp; Announcements
           </span>
         </div>
@@ -420,15 +422,15 @@ function AnnouncementBoard() {
       >
         {/* badge row */}
         <div className="mb-2.5 flex items-center justify-between">
-          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${p.badge}`}>
+          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider ${p.badge}`}>
             <span className="material-symbols-outlined filled text-sm">{a.icon}</span>
             {a.label}
           </span>
-          <span className="text-[10px] font-semibold text-white/40">{a.date}</span>
+          <span className="text-[10.5px] font-semibold text-white/40">{a.date}</span>
         </div>
 
         {/* announcement text */}
-        <p className="text-[12.5px] leading-relaxed text-white/80">{a.text}</p>
+        <p className="text-[13.5px] leading-relaxed text-white/80">{a.text}</p>
       </div>
 
       {/* ── coloured progress bar at bottom ── */}
@@ -487,15 +489,17 @@ function CardHeader({ tab, switchTab }) {
 
       {/* Bank identity */}
       <div className="relative flex items-center gap-4 mb-5">
-        <div className="logo-pulse flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl overflow-hidden bg-white shadow-lg border border-white/30">
-          <img src="/images/nisir_bank_logo.svg" alt="Nisir Bank S.C." className="h-12 w-12 object-contain" />
-        </div>
+        <img
+          src="/images/nisir_bank_logo.svg"
+          alt="Nisir Bank S.C."
+          className="logo-pulse h-10 w-10 shrink-0 rounded-2xl border border-white/30 bg-white/20 shadow-lg backdrop-blur-sm object-contain p-1"
+        />
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-200/80">
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue-200/80">
             Nisir Bank S.C.
           </p>
           <p className="hg text-lg font-bold text-white leading-tight">Employee Portal</p>
-          <p className="text-[11px] text-white/60 mt-0.5">SETA Training &amp; Compliance</p>
+          <p className="text-[11.5px] text-white/60 mt-0.5">SETA Training &amp; Compliance</p>
         </div>
       </div>
 
@@ -524,8 +528,8 @@ function TabButton({ active, icon, label, onClick }) {
 function CardFooter() {
   return (
     <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-5 py-3">
-      <p className="text-[11px] text-gray-400">© 2026 Nisir Bank S.C.</p>
-      <div className="flex gap-3 text-[11px]">
+      <p className="text-[11.5px] text-gray-400">© 2026 Nisir Bank S.C.</p>
+      <div className="flex gap-3 text-[11.5px]">
         <a href="#" className="text-gray-400 hover:text-blue-700 transition-colors">Privacy</a>
         <span className="text-gray-300">·</span>
         <a href="#" className="text-gray-400 hover:text-blue-700 transition-colors">Terms</a>
@@ -598,7 +602,7 @@ function SignInForm({ login, setLogin, showPwd, setShowPwd, loginErr, loginLoad,
         Sign In
       </PrimaryButton>
 
-      <p className="text-center text-[11px] text-gray-400 pt-1">
+      <p className="text-center text-[11.5px] text-gray-400 pt-1">
         Need help?{" "}
         <a href="#" className="font-bold text-blue-700 hover:underline">
           Contact Security Operations
@@ -633,7 +637,7 @@ function RegisterForm({ reg, setReg, regMsg, regLoad, handleRegister, switchTab 
      
 
       {/* Security note */}
-      <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[11px] text-amber-800 leading-relaxed">
+      <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[11.5px] text-amber-800 leading-relaxed">
         <span className="material-symbols-outlined filled text-base text-amber-500 shrink-0 mt-0.5">lock</span>
         <span>
           Your temporary password will be sent <strong>only</strong> to your pre-registered
@@ -645,7 +649,7 @@ function RegisterForm({ reg, setReg, regMsg, regLoad, handleRegister, switchTab 
         Send My Credentials
       </PrimaryButton>
 
-      <p className="text-center text-[11px] text-gray-400 pt-1">
+      <p className="text-center text-[11.5px] text-gray-400 pt-1">
         Already have credentials?{" "}
         <button
           type="button"
@@ -841,7 +845,7 @@ function AccessCard({ tags }) {
         {tags.map((tag) => (
           <span
             key={tag}
-            className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/80"
+            className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11.5px] font-semibold text-white/80"
           >
             {tag}
           </span>
@@ -960,7 +964,7 @@ function FeatureCard({ icon, title, description, color }) {
       </div>
       <div>
         <p className="text-sm font-bold text-white mb-1.5">{title}</p>
-        <p className="text-[13px] leading-relaxed text-white/75">{description}</p>
+        <p className="text-[13.5px] leading-relaxed text-white/75">{description}</p>
       </div>
     </div>
   );

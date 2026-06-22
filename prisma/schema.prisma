@@ -18,13 +18,18 @@ enum EmployeeRole {
 }
 
 model EmployeeAccount {
-  id                String       @id @default(cuid())
-  employeeId        String       @unique
-  passwordHash      String
-  role              EmployeeRole @default(EMPLOYEE)
-  mustResetPassword Boolean      @default(true)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  id                  String       @id @default(cuid())
+  employeeId          String       @unique
+  passwordHash        String
+  role                EmployeeRole @default(EMPLOYEE)
+  mustResetPassword   Boolean      @default(true)
+  // Research session tracking â set on first login / once all 21 emails are opened.
+  sessionStartedAt   DateTime?
+  sessionCompletedAt DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  emails EmployeeEmail[]
 }
 
 // Read-only mirror of the HR system. Seeded/synced externally; never written by this app.
@@ -36,4 +41,83 @@ model HrEmployee {
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+enum EmailActionType {
+  INFO
+  LINK
+  REPLY
+  CREDENTIAL
+  APPROVE
+  ATTACHMENT
+}
+
+enum EmailActionStatus {
+  NONE
+  REPLIED
+  DONE
+  APPROVED
+  DECLINED
+  DOWNLOADING
+  DOWNLOADED
+  VERIFYING
+  VERIFIED
+}
+
+// Content/template for a SETA phishing-awareness inbox message. Shared across
+// all employees; per-employee read/response state lives on EmployeeEmail.
+model InternalEmail {
+  id             String          @id @default(cuid())
+  // Fixed presentation order, identical for every participant. Never re-sorted at query time.
+  sequenceNumber Int             @unique
+  senderName     String
+  senderEmail    String
+  subject        String
+  preview        String
+  body           String
+  tag            String
+  actionType     EmailActionType @default(INFO)
+  actionLabel    String?
+  href           String?
+  approveLabel   String?
+  declineLabel   String?
+  attachmentName String?
+  attachmentSize String?
+  replyPrompt    String?
+  // Marks this template as a simulated phishing attempt for admin/research reporting only.
+  // Never exposed through the employee-facing inbox API.
+  isPhishing     Boolean         @default(false)
+  // 'high' | 'medium' | 'low' contextualization â research metadata only, never shown to participants.
+  phishingLevel  String?
+  phishingNotes  String?
+  sentAt         DateTime
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  deliveries EmployeeEmail[]
+}
+
+// One employee's copy of an InternalEmail, tracking whether they've read it,
+// the research DVs (click / submit), and what action (if any) they took.
+model EmployeeEmail {
+  id           String            @id @default(cuid())
+  employeeId   String
+  emailId      String
+  isRead       Boolean           @default(false)
+  isArchived   Boolean           @default(false)
+  actionStatus EmailActionStatus @default(NONE)
+  actionText   String?
+  actionAt     DateTime?
+  // Research DVs â recorded independently of actionStatus so DV1/DV2 timing survives
+  // regardless of which actionType the email uses.
+  openedAt     DateTime?
+  dv1ClickedAt DateTime?
+  dv2SubmittedAt DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  employee EmployeeAccount @relation(fields: [employeeId], references: [employeeId])
+  email    InternalEmail   @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, emailId])
 }
