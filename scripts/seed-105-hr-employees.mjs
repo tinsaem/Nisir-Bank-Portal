@@ -19,7 +19,7 @@ async function main() {
     const number = padEmployeeNumber(i);
 
     const employeeId = `EMP-${number}`;
-    const fullName = `Test Employee ${number}`;
+    const fullName = `Employee ${number}`;
     const email = `emp${number}@nisirbank.local`;
 
     await client.query(

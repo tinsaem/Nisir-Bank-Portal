@@ -89,13 +89,40 @@ export default function Header() {
   return (
     <header className="navbar">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-24 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6">
-          <Link href="/employee_dashboard" className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-4">
+          <Link
+            href={account.role === "ADMIN" ? "/admin_dashboard" : "/employee_dashboard"}
+            className="flex flex-col items-center shrink-0"
+          >
             <img
               src="/images/nisir_bank_logo.svg"
               alt="Nisir Bank S.C."
               className="h-20 w-auto"
             />
+            <span className="text-[10px] font-bold text-gray-600 tracking-wide leading-none mt-0.5">
+              Nisir Bank S.C.
+            </span>
+          </Link>
+
+          {/* Divider */}
+          <span className="h-6 w-px bg-gray-200 shrink-0" />
+
+          {/* Home pill — always visible, role-aware, proportional to logo */}
+          <Link
+            href={account.role === "ADMIN" ? "/admin_dashboard" : "/employee_dashboard"}
+            className={`inline-flex items-center gap-1.5 px-3 h-8 rounded-full text-[12px] font-semibold text-white bg-gradient-to-br from-blue-700 to-blue-400 border border-blue-200 shadow-sm transition-all duration-200 shrink-0 hover:brightness-110 hover:shadow-md ${
+              isActive(account.role === "ADMIN" ? "/admin_dashboard" : "/employee_dashboard")
+                ? "ring-2 ring-blue-300 ring-offset-1"
+                : ""
+            }`}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "15px", fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}
+            >
+              home
+            </span>
+            <span className="hidden sm:inline">Home</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">

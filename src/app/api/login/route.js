@@ -12,66 +12,80 @@ const INVALID_CREDENTIALS = {
 };
 
 export async function POST(req) {
-  const body = await req.json();
-  const employeeId = body.employee_id?.trim();
-  const password = body.password;
-  const rememberMe = Boolean(body.remember_me);
+  try {
+    const body = await req.json();
+    const employeeId = body.employee_id?.trim();
+    const password = body.password;
+    const rememberMe = Boolean(body.remember_me);
 
-  if (!employeeId || !password) {
-    return NextResponse.json(
-      { success: false, message: "Employee ID and Password are required." },
-      { status: 400 }
-    );
-  }
+    if (!employeeId || !password) {
+      return NextResponse.json(
+        { success: false, message: "Employee ID and Password are required." },
+        { status: 400 }
+      );
+    }
 
-  const account = await prisma.employeeAccount.findUnique({
-    where: { employeeId },
-  });
+    const account = await prisma.employeeAccount.findUnique({
+      where: { employeeId },
+    });
 
-  if (!account) {
-    return NextResponse.json(INVALID_CREDENTIALS, { status: 401 });
-  }
+    if (!account) {
+      return NextResponse.json(
+        { success: false, message: `No account found for ID: "${employeeId}"` },
+        { status: 401 }
+      );
+    }
 
-  const passwordMatches = await bcrypt.compare(password, account.passwordHash);
+    const passwordMatches = await bcrypt.compare(password, account.passwordHash);
 
-  if (!passwordMatches) {
-    return NextResponse.json(INVALID_CREDENTIALS, { status: 401 });
-  }
+    if (!passwordMatches) {
+      return NextResponse.json(
+        { success: false, message: `Wrong password for ID: "${employeeId}"` },
+        { status: 401 }
+      );
+    }
 
-  const hrEmployee = await prisma.hrEmployee.findUnique({
-    where: { employeeId },
-  });
+    const hrEmployee = await prisma.hrEmployee.findUnique({
+      where: { employeeId },
+    });
 
-  const duration = rememberMe ? REMEMBER_DURATION_MS : SESSION_DURATION_MS;
+    const duration = rememberMe ? REMEMBER_DURATION_MS : SESSION_DURATION_MS;
 
-  const token = await createSessionToken({
-    employeeId: account.employeeId,
-    role: account.role,
-    exp: Date.now() + duration,
-  });
-
-  const redirectTo =
-    account.role === "ADMIN" ? "/admin_dashboard" : "/employee_dashboard";
-
-  const response = NextResponse.json({
-    success: true,
-    message: "Signed in successfully.",
-    redirectTo,
-    user: {
+    const token = await createSessionToken({
       employeeId: account.employeeId,
       role: account.role,
-      fullName: hrEmployee?.fullName ?? account.employeeId,
-      mustResetPassword: account.mustResetPassword,
-    },
-  });
+      exp: Date.now() + duration,
+    });
 
-  response.cookies.set(SESSION_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: duration / 1000,
-  });
+    const redirectTo =
+      account.role === "ADMIN" ? "/admin_dashboard" : "/employee_dashboard";
 
-  return response;
+    const response = NextResponse.json({
+      success: true,
+      message: "Signed in successfully.",
+      redirectTo,
+      user: {
+        employeeId: account.employeeId,
+        role: account.role,
+        fullName: hrEmployee?.fullName ?? account.employeeId,
+        mustResetPassword: account.mustResetPassword,
+      },
+    });
+
+    response.cookies.set(SESSION_COOKIE, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: duration / 1000,
+    });
+
+    return response;
+  } catch (err) {
+    console.error("[login] unexpected error:", err);
+    return NextResponse.json(
+      { success: false, message: "Server error: " + err.message },
+      { status: 500 }
+    );
+  }
 }

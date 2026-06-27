@@ -6,15 +6,15 @@ import Link from "next/link";
 
 const MOCK_STATS = {
   branch: "Addis Ababa",
-  complianceScore: 86,
-  completedModules: 8,
+  complianceScore: 0,
+  completedModules: 0,
   totalModules: 12,
-  tokens: 2450,
+  tokens: 0,
 };
 
 const OTHER_LEADERBOARD_ENTRIES = [
-  { id: "E-20187", name: "Sara Alemu", tokens: 4200 },
-  { id: "E-30412", name: "Nahom Bekele", tokens: 3800 },
+  { id: "E-20187", name: "Sara Alemu", tokens: 0 },
+  { id: "E-30412", name: "Nahom Bekele", tokens: 0 },
 ];
 
 function getInitials(name) {
@@ -91,8 +91,7 @@ export default function EmployeeDashboardPage() {
     { id: user.id, name: user.name, tokens: user.tokens },
   ];
   const sortedLeaderboard = [...leaderboard].sort((a, b) => b.tokens - a.tokens);
-  const currentUserRank =
-    sortedLeaderboard.findIndex((person) => person.id === user.id) + 1;
+  const currentUserRank = 0;
 
   return (
     <main className="min-h-screen bg-[#f0f4fb] text-[#1a1c1f]">
@@ -196,12 +195,6 @@ export default function EmployeeDashboardPage() {
 
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden bg-white/95 shadow shrink-0">
-                <img src="/images/nisir_bank_logo.svg" alt="Nisir Bank S.C." className="h-8 w-8 object-contain" />
-              </div>
-              <span className="text-white/70 text-xs font-semibold">Nisir Bank S.C.</span>
-            </div>
             <p className="text-blue-300 text-xs font-semibold tracking-widest uppercase mb-1">
               Welcome back
             </p>

@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* ── self-hosted Material Symbols Outlined (offline-safe) ─────── */
+@font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  font-display: block;
+  font-weight: 100 700;
+  src: url("/fonts/material-symbols-outlined.woff2") format("woff2-variations");
+}
+
 /* ── root ─────────────────────────────────────────────────────── */
 :root {
   font-size: 15px;
@@ -32,9 +41,14 @@ body {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB5-ZWmZ20cmXlE1RuWhYFjrjyAcYhNJm6AKArxCRoYpezAE7wZiIXuc9ol85rTDDGHPI5q7SmOYS1EgTwNIgDQtllDQwVdBunx0NF17YDEGuYISIZ3T8IcuZJEYF06ExLP00RaF9HBAsh2xE0ZQq5SdX8pK2VsYRutUVJV2tUfJ5zluY8fHxgbH43L-P1cSyJns2OQTWomllVfh7H6QMo5PHQXMKZM28OjghxICBGPJT2oah0Ea4ftqXI66WzvIBDQ8UkMgNcgLCo");
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(
+    155deg,
+    #000814 0%,
+    #001230 25%,
+    #001e52 55%,
+    #002a70 80%,
+    #003380 100%
+  );
 }
 
 .bg-scene::after {

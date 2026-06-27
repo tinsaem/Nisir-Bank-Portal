@@ -891,7 +891,7 @@ function FormField({ label, htmlFor, icon, children }) {
   );
 }
 
-function PrimaryButton({ loading, loadLabel, icon, children }) {
+ function PrimaryButton({ loading, loadLabel, icon, children }) {
   return (
     <button type="submit" className="btn-primary mt-1" disabled={loading}>
       {loading ? (
@@ -907,9 +907,9 @@ function PrimaryButton({ loading, loadLabel, icon, children }) {
       )}
     </button>
   );
-}
+ }
 
-function StatusMessage({ type, text }) {
+ function StatusMessage({ type, text }) {
   return (
     <div className={type === "ok" ? "success-msg show" : "error-msg show"}>
       <span className="material-symbols-outlined text-base">
@@ -918,17 +918,17 @@ function StatusMessage({ type, text }) {
       <span>{text}</span>
     </div>
   );
-}
+ }
 
-function InfoBanner({ children }) {
+ function InfoBanner({ children }) {
   return (
     <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-800 leading-relaxed">
       {children}
     </div>
   );
-}
+ }
 
-function InfoTile({ icon, color, title, detail }) {
+ function InfoTile({ icon, color, title, detail }) {
   const palette = {
     blue:   { border: "border-sky-400/25",     bg: "bg-sky-500/15",     icon: "text-sky-300" },
     amber:  { border: "border-amber-400/25",   bg: "bg-amber-500/15",   icon: "text-amber-300" },
@@ -943,9 +943,9 @@ function InfoTile({ icon, color, title, detail }) {
       <p className="body-copy-sm text-xs">{detail}</p>
     </div>
   );
-}
+ }
 
-function FeatureCard({ icon, title, description, color }) {
+ function FeatureCard({ icon, title, description, color }) {
   const palette = {
     blue:   { border: "border-sky-400/30",     bg: "bg-sky-500/20",     icon: "text-sky-300" },
     green:  { border: "border-emerald-400/30", bg: "bg-emerald-500/20", icon: "text-emerald-300" },
