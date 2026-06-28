@@ -247,11 +247,6 @@ function Navbar() {
       <div className="flex items-center gap-4 shrink-0">
         <BankLogo />
 
-        <div>
-          <p className="text-sm font-bold text-white leading-tight">Nisir Bank S.C.</p>
-          <p className="text-[11px] font-semibold text-white/60">Est. Ethiopian Year 2019</p>
-        </div>
-
         <div className="mx-2 h-6 w-px bg-white/20 hidden sm:block" />
 
         <NavPill icon="check_circle" color="emerald" label="NBE Licensed" />

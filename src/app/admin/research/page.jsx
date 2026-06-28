@@ -62,13 +62,6 @@ export default function ResearchDashboardPage() {
   return (
     <main className="min-h-screen bg-[#f0f4fb] text-[#1a1c1f]">
       <section className="px-4 sm:px-6 py-8 max-w-[1400px] mx-auto">
-        <div className="flex items-center gap-3 mb-4">
-          <img src="/images/nisir_bank_logo.svg" alt="Nisir Bank S.C." className="h-12 w-auto" />
-          <div>
-            <p className="text-[11px] font-bold text-gray-700 leading-tight">Nisir Bank S.C.</p>
-            <p className="text-[10px] text-gray-400 leading-tight">SETA Portal — PhD Research Study</p>
-          </div>
-        </div>
         <p className="text-blue-700 text-xs font-semibold tracking-widest uppercase mb-1">
           Nisir Bank SETA Portal — PhD Research Study
         </p>

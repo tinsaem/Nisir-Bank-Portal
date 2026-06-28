@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import EmployeeNav from "@/components/EmployeeNav";
 
 // ── Assessment catalogue ────────────────────────────────────────────────────
 const ASSESSMENTS = [
@@ -160,7 +162,16 @@ export default function ChallengePage() {
     setAccount(parsed);
   }, [router]);
 
-  if (!account) return <main className="min-h-screen bg-[#f0f4fb]" />;
+  if (!account) {
+    return (
+      <main className="min-h-screen bg-[#f0f4fb]">
+        <EmployeeNav />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="w-10 h-10 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
+        </div>
+      </main>
+    );
+  }
 
   function openAssessment(key) {
     setSelected(key);
@@ -187,54 +198,75 @@ export default function ChallengePage() {
     ? Math.max(...Object.values(scores)) + "%"
     : "—";
 
+  const totalTokenPotential = ASSESSMENTS.reduce((t, a) => t + parseInt(a.tokens), 0);
+
   return (
     <main className="min-h-screen bg-[#f0f4fb] text-[#1a1c1f]">
       <style jsx global>{`
         .hg { font-family: 'Hanken Grotesk', sans-serif; }
         .badge-pill { display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em; }
         .hero-banner {
-          background: linear-gradient(135deg,#001e40 0%,#003366 45%,#1f477b 100%);
+          background: linear-gradient(135deg,#0c1f4a 0%,#1a006e 50%,#3a0ca3 100%);
           position:relative; overflow:hidden;
         }
         .hero-banner::before {
           content:""; position:absolute; inset:0;
           background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
-        .hero-orb { position:absolute;border-radius:999px;filter:blur(60px);opacity:0.15;pointer-events:none; }
+        .hero-orb { position:absolute;border-radius:999px;filter:blur(60px);opacity:0.2;pointer-events:none; }
         .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle; }
+        .ms-filled { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
       `}</style>
+
+      <EmployeeNav />
 
       {/* ── Hero banner ── */}
       <section className="hero-banner px-4 sm:px-6 py-10">
-        <div className="hero-orb w-80 h-80 bg-blue-400" style={{ top: "-60px", right: "-40px" }} />
-        <div className="hero-orb w-56 h-56 bg-indigo-300" style={{ bottom: "-40px", left: "10%" }} />
-        <div className="max-w-7xl mx-auto relative z-10 flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden bg-white/95 shadow shrink-0">
-                <img src="/images/nisir_bank_logo.svg" alt="Nisir Bank S.C." className="h-8 w-8 object-contain" />
-              </div>
-              <span className="text-white/70 text-xs font-semibold">Nisir Bank S.C.</span>
+        <div className="hero-orb w-80 h-80 bg-purple-400" style={{ top: "-60px", right: "-40px" }} />
+        <div className="hero-orb w-56 h-56 bg-blue-400" style={{ bottom: "-40px", left: "10%" }} />
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
+            <div>
+              <p className="text-purple-300 text-xs font-semibold tracking-widest uppercase mb-1">
+                <span className="material-symbols-outlined ms-filled text-sm mr-1">sports_esports</span>
+                Challenge Hub · SETA Training
+              </p>
+              <h1 className="hg text-white text-3xl sm:text-4xl font-bold leading-tight mb-2">
+                Security Challenges
+              </h1>
+              <p className="text-purple-200 text-sm">
+                {ASSESSMENTS.length} challenges available · up to {totalTokenPotential.toLocaleString()} ISP tokens to earn
+              </p>
             </div>
-            <p className="text-blue-300 text-xs font-semibold tracking-widest uppercase mb-1">
-              Security Education, Training &amp; Awareness
-            </p>
-            <h1 className="hg text-white text-3xl sm:text-4xl font-bold leading-tight mb-2">
-              Assessments
-            </h1>
-            <p className="text-blue-200 text-sm">
-              {ASSESSMENTS.length} assessments · earn ISP tokens for every passing score
-            </p>
+            {selected && (
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                className="flex items-center gap-1.5 text-xs font-bold text-purple-200 hover:text-white transition-colors shrink-0 mt-1"
+              >
+                <span className="material-symbols-outlined text-base">arrow_back</span>
+                All Challenges
+              </button>
+            )}
           </div>
-          {selected && (
-            <button
-              type="button"
-              onClick={() => setSelected(null)}
-              className="flex items-center gap-1.5 text-xs font-bold text-blue-200 hover:text-white transition-colors shrink-0"
-            >
-              <span className="material-symbols-outlined text-base">arrow_back</span>
-              All Assessments
-            </button>
+
+          {/* Reward tier banner */}
+          {!selected && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { icon: "emoji_events", label: "Leaderboard Bonus", value: "2× multiplier for Top 3", color: "text-yellow-300" },
+                { icon: "bolt",         label: "Perfect Score",      value: "+50 ISP bonus per quiz",  color: "text-purple-200" },
+                { icon: "local_fire_department", label: "Streak Bonus", value: "×1.5 at 3-day streak", color: "text-orange-300" },
+              ].map((r) => (
+                <div key={r.label} className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-4 py-3 flex items-center gap-3">
+                  <span className={`material-symbols-outlined ms-filled text-2xl shrink-0 ${r.color}`}>{r.icon}</span>
+                  <div>
+                    <p className="text-white text-xs font-bold">{r.value}</p>
+                    <p className="text-purple-300 text-[10px]">{r.label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </section>
@@ -252,6 +284,7 @@ export default function ChallengePage() {
             score={scores[selected]}
             onSubmit={submitQuiz}
             onRetake={() => { setAnswers({}); setSubmitted(false); }}
+            onBack={() => setSelected(null)}
           />
         )}
 
@@ -261,14 +294,14 @@ export default function ChallengePage() {
             {/* Stats bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { icon: "assignment",   label: "Total Assessments", value: ASSESSMENTS.length,                color: "text-blue-700" },
-                { icon: "check_circle", label: "Completed",          value: Object.keys(scores).length,       color: "text-emerald-600" },
-                { icon: "emoji_events", label: "Best Score",         value: bestScore,                        color: "text-yellow-600" },
-                { icon: "toll",         label: "Tokens Earned",      value: tokensEarned + " ISP",            color: "text-purple-600" },
+                { icon: "sports_esports", label: "Challenges Available", value: ASSESSMENTS.length,          color: "text-purple-700", bg: "bg-purple-50" },
+                { icon: "check_circle",   label: "Completed",            value: Object.keys(scores).length,  color: "text-emerald-600", bg: "bg-emerald-50" },
+                { icon: "emoji_events",   label: "Best Score",           value: bestScore,                   color: "text-yellow-600", bg: "bg-yellow-50" },
+                { icon: "toll",           label: "ISP Tokens Earned",    value: tokensEarned > 0 ? tokensEarned.toLocaleString() + " ISP" : "0 ISP", color: "text-blue-700", bg: "bg-blue-50" },
               ].map((s) => (
                 <div key={s.label} className="bg-white rounded-2xl border border-[rgba(195,198,209,0.4)] shadow-sm p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
-                    <span className={`material-symbols-outlined text-xl ${s.color}`}>{s.icon}</span>
+                  <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
+                    <span className={`material-symbols-outlined ms-filled text-xl ${s.color}`}>{s.icon}</span>
                   </div>
                   <div>
                     <p className={`hg text-xl font-bold ${s.color}`}>{s.value}</p>
@@ -342,7 +375,7 @@ export default function ChallengePage() {
 }
 
 // ── Quiz panel ──────────────────────────────────────────────────────────────
-function QuizPanel({ quiz, answers, setAnswers, submitted, score, onSubmit, onRetake }) {
+function QuizPanel({ quiz, answers, setAnswers, submitted, score, onSubmit, onRetake, onBack }) {
   const allAnswered = quiz.qs.every((_, i) => i in answers);
 
   function handleSubmit(e) {
@@ -353,28 +386,92 @@ function QuizPanel({ quiz, answers, setAnswers, submitted, score, onSubmit, onRe
 
   if (submitted) {
     const passed = score >= 80;
+    const perfect = score === 100;
+    const tokensAwarded = parseInt(quiz.tokens);
+    const bonusTokens = perfect ? 50 : 0;
+    const totalAwarded = passed ? tokensAwarded + bonusTokens : 0;
+
     return (
-      <div className="bg-white rounded-[20px] border border-[rgba(195,198,209,0.4)] shadow-sm p-8 text-center max-w-lg mx-auto">
-        <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl ${passed ? "bg-emerald-100" : "bg-amber-100"}`}>
-          {passed ? "🏆" : "📝"}
-        </div>
-        <h2 className="hg text-2xl font-bold text-gray-900 mb-1">{score}%</h2>
-        <p className={`text-sm font-semibold mb-1 ${passed ? "text-emerald-600" : "text-amber-600"}`}>
-          {passed ? "Assessment Passed!" : "Keep Practising"}
-        </p>
-        <p className="text-xs text-gray-500 mb-6">
-          {passed
-            ? "Excellent work. Your score has been recorded and tokens have been added to your account."
-            : "Review the module and try again to improve your score and earn the full token reward."}
-        </p>
-        <button
-          type="button"
-          onClick={onRetake}
-          className="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:brightness-110"
-          style={{ background: "linear-gradient(135deg,#003366,#3a5f94)" }}
+      <div className="bg-white rounded-[20px] border border-[rgba(195,198,209,0.4)] shadow-sm overflow-hidden max-w-lg mx-auto">
+        {/* Result header */}
+        <div
+          className="px-6 py-8 text-center relative overflow-hidden"
+          style={{
+            background: passed
+              ? "linear-gradient(135deg,#064e3b,#065f46,#047857)"
+              : "linear-gradient(135deg,#7c2d12,#9a3412,#c2410c)",
+          }}
         >
-          Retake
-        </button>
+          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ background: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4z'/%3E%3C/g%3E%3C/svg%3E\")" }} />
+          <div className="relative z-10">
+            <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl shadow-lg border-4 ${passed ? "bg-emerald-100 border-emerald-200" : "bg-orange-100 border-orange-200"}`}>
+              {perfect ? "🏆" : passed ? "✅" : "📝"}
+            </div>
+            <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">{quiz.title}</p>
+            <h2 className="hg text-5xl font-black text-white mb-1">{score}%</h2>
+            <p className={`text-base font-bold ${passed ? "text-emerald-200" : "text-orange-200"}`}>
+              {perfect ? "Perfect Score!" : passed ? "Assessment Passed!" : "Keep Practising"}
+            </p>
+          </div>
+        </div>
+
+        {/* Token reward */}
+        {passed && (
+          <div className="px-6 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined ms-filled text-yellow-500 text-xl">toll</span>
+                <div>
+                  <p className="text-xs text-gray-500">Tokens Awarded</p>
+                  <p className="hg text-lg font-black text-yellow-700">+{totalAwarded} ISP</p>
+                </div>
+              </div>
+              {perfect && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-right">
+                  <p className="text-[10px] text-yellow-600 font-bold uppercase">Perfect Bonus</p>
+                  <p className="text-sm font-black text-yellow-700">+{bonusTokens} ISP</p>
+                </div>
+              )}
+            </div>
+            <div className="mt-3 bg-gray-50 rounded-xl px-4 py-2 flex items-center gap-2">
+              <span className="material-symbols-outlined ms-filled text-blue-500 text-base">info</span>
+              <p className="text-[11px] text-gray-600">Tokens recorded in your leaderboard score. First-attempt scores count for ranking.</p>
+            </div>
+          </div>
+        )}
+
+        {!passed && (
+          <div className="px-6 py-4 border-b border-gray-100 bg-orange-50">
+            <div className="flex items-start gap-3">
+              <span className="material-symbols-outlined ms-filled text-orange-500 text-xl shrink-0 mt-0.5">school</span>
+              <div>
+                <p className="text-sm font-bold text-orange-800 mb-0.5">Score below 80% — no tokens awarded</p>
+                <p className="text-xs text-orange-700">Review the module in <strong>Foundational Learning</strong> then retake to earn the full token reward. Your best score is recorded.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="px-6 py-5 flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={onRetake}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+          >
+            <span className="material-symbols-outlined text-base">replay</span>
+            Retake
+          </button>
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
+            style={{ background: "linear-gradient(135deg,#3a0ca3,#7209b7)" }}
+          >
+            <span className="material-symbols-outlined text-base">sports_esports</span>
+            More Challenges
+          </button>
+        </div>
       </div>
     );
   }
@@ -383,18 +480,24 @@ function QuizPanel({ quiz, answers, setAnswers, submitted, score, onSubmit, onRe
     <div className="bg-white rounded-[20px] border border-[rgba(195,198,209,0.4)] shadow-sm overflow-hidden">
       <div
         className="px-6 py-5 flex items-center gap-4"
-        style={{ background: "linear-gradient(135deg,#001e40,#003366,#1f477b)" }}
+        style={{ background: "linear-gradient(135deg,#0c1f4a,#1a006e,#3a0ca3)" }}
       >
         <div className={`w-12 h-12 rounded-2xl ${quiz.iconBg} flex items-center justify-center shrink-0`}>
           <span className={`material-symbols-outlined ${quiz.iconColor} text-2xl`}>{quiz.icon}</span>
         </div>
-        <div>
-          <p className="text-blue-300 text-[11px] font-bold uppercase tracking-widest">Assessment</p>
-          <h2 className="hg text-lg font-bold text-white">{quiz.title}</h2>
+        <div className="flex-1 min-w-0">
+          <p className="text-purple-300 text-[11px] font-bold uppercase tracking-widest">Challenge</p>
+          <h2 className="hg text-base font-bold text-white leading-tight">{quiz.title}</h2>
+          <div className="flex items-center gap-3 mt-1">
+            <span className={`badge-pill ${quiz.diffCls}`}>{quiz.difficulty}</span>
+            <span className="text-purple-300 text-[11px] flex items-center gap-1">
+              <span className="material-symbols-outlined text-xs">timer</span>{quiz.duration}
+            </span>
+          </div>
         </div>
-        <div className="ml-auto text-right">
-          <p className="text-blue-300 text-[11px]">Questions</p>
-          <p className="hg text-2xl font-bold text-white">{quiz.qs.length}</p>
+        <div className="text-right shrink-0">
+          <p className="text-yellow-400 text-[11px] font-bold">{quiz.tokens}</p>
+          <p className="text-purple-300 text-[10px]">on pass</p>
         </div>
       </div>
 
@@ -432,18 +535,42 @@ function QuizPanel({ quiz, answers, setAnswers, submitted, score, onSubmit, onRe
           </div>
         ))}
 
-        <div className="pt-2 flex items-center justify-between">
-          <p className="text-xs text-gray-400">
-            {Object.keys(answers).length} / {quiz.qs.length} answered
-          </p>
-          <button
-            type="submit"
-            disabled={!allAnswered}
-            className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ background: "linear-gradient(135deg,#003366,#3a5f94)" }}
-          >
-            Submit Assessment
-          </button>
+        <div className="pt-2 border-t border-gray-100">
+          {/* Progress bar */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-xs text-gray-400 font-medium">{Object.keys(answers).length} of {quiz.qs.length} answered</p>
+              <p className="text-xs font-bold text-purple-700">{Math.round((Object.keys(answers).length / quiz.qs.length) * 100)}%</p>
+            </div>
+            <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${(Object.keys(answers).length / quiz.qs.length) * 100}%`,
+                  background: "linear-gradient(90deg,#3a0ca3,#7209b7)",
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-4 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-base">arrow_back</span>
+              Exit
+            </button>
+            <button
+              type="submit"
+              disabled={!allAnswered}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{ background: "linear-gradient(135deg,#3a0ca3,#7209b7)" }}
+            >
+              <span className="material-symbols-outlined text-base">send</span>
+              Submit Assessment
+            </button>
+          </div>
         </div>
       </form>
     </div>

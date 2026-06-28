@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import EmployeeNav from "@/components/EmployeeNav";
 
 // ── Module catalogue ────────────────────────────────────────────────────────
 const MODULES = [
@@ -17,9 +18,9 @@ const MODULES = [
     iconBg: "bg-blue-50",
     iconColor: "text-blue-700",
     desc: "Build your foundation with an overview of Nisir Bank's information security policy framework.",
-    badge: "In Progress",
-    badgeCls: "bg-[#ffdbca] text-[#723610]",
-    btn: "Continue",
+    badge: "",
+    badgeCls: "",
+    btn: "Start Learning",
     priority: false,
     aiNote: null,
   },
@@ -37,7 +38,7 @@ const MODULES = [
     desc: "Identify advanced phishing tactics and social engineering used against bank staff.",
     badge: "⚠ Priority",
     badgeCls: "bg-[#ffdad6] text-[#93000a]",
-    btn: "Priority Study",
+    btn: "Start Learning",
     priority: true,
     aiNote: "Phishing is the #1 threat vector targeting bank employees — this is your most critical module.",
   },
@@ -107,8 +108,8 @@ const MODULES = [
     iconBg: "bg-teal-50",
     iconColor: "text-teal-600",
     desc: "Preventing data leakage and identifying malicious attachments in daily communication.",
-    badge: "Trending",
-    badgeCls: "bg-[#ffdbca] text-[#723610]",
+    badge: "",
+    badgeCls: "",
     btn: "Start Learning",
     priority: false,
     aiNote: null,
@@ -151,17 +152,13 @@ const MODULES = [
   },
 ];
 
-const RESOURCES = [
-  { label: "Lesson Slide Deck",     meta: "PDF · 2.4 MB" },
-  { label: "Policy Summary",        meta: "PDF · 1.1 MB" },
-  { label: "Quick Reference Guide", meta: "PDF · 850 KB" },
-];
-
 // ── Page ────────────────────────────────────────────────────────────────────
 export default function FoundationalLearningPage() {
   const router = useRouter();
   const [account, setAccount] = useState(null);
   const [activeKey, setActiveKey] = useState("intro");
+  const [modal, setModal] = useState(null);
+  const [documents, setDocuments] = useState([]);
   const heroRef = useRef(null);
 
   useEffect(() => {
@@ -173,17 +170,102 @@ export default function FoundationalLearningPage() {
     setAccount(parsed);
   }, [router]);
 
+  useEffect(() => {
+    if (!account) return;
+    fetch("/api/documents")
+      .then((r) => r.json())
+      .then((data) => { if (data.success) setDocuments(data.documents); })
+      .catch(() => {});
+  }, [account]);
+
   if (!account) return <main className="min-h-screen bg-[#f0f4fb]" />;
 
   const mod = MODULES.find((m) => m.key === activeKey) ?? MODULES[0];
 
   function select(key) {
     setActiveKey(key);
-    heroRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setModal(MODULES.find((m) => m.key === key) ?? MODULES[0]);
   }
 
   return (
     <main className="min-h-screen bg-[#f0f4fb] text-[#1a1c1f]">
+      <EmployeeNav />
+      {/* ── Coming-soon modal ── */}
+      {modal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,10,30,0.7)", backdropFilter: "blur(6px)" }}
+          onClick={() => setModal(null)}
+        >
+          <div
+            className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 flex flex-col items-center text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close */}
+            <button
+              type="button"
+              onClick={() => setModal(null)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+
+            {/* Status badge */}
+            <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-1.5 mb-6">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              <span className="text-amber-700 text-[11px] font-bold uppercase tracking-wider">Content Under Development</span>
+            </div>
+
+            {/* Icon */}
+            <div className="w-20 h-20 rounded-2xl bg-blue-50 flex items-center justify-center mb-5">
+              <span className="material-symbols-outlined text-blue-600" style={{ fontSize: 40, fontVariationSettings: "'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48" }}>
+                video_library
+              </span>
+            </div>
+
+            <h2 className="hg text-lg font-bold text-gray-900 mb-2">{modal.title}</h2>
+
+            <p className="text-sm text-gray-500 leading-relaxed mb-6">
+              The video content for this module is currently being reviewed and
+              prepared by the Security Operations team. It will be made available
+              in the next portal update.
+            </p>
+
+            <div className="w-full bg-gray-50 rounded-2xl border border-gray-100 p-4 mb-6 text-left space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-sm text-blue-500">schedule</span>
+                  Status
+                </span>
+                <span className="font-bold text-amber-600">Pending Upload</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-sm text-blue-500">calendar_month</span>
+                  Estimated Release
+                </span>
+                <span className="font-bold text-gray-700">Next System Update</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-sm text-yellow-500">toll</span>
+                  Reward on Completion
+                </span>
+                <span className="font-bold text-yellow-600">{modal.tokens}</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setModal(null)}
+              className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110"
+              style={{ background: "linear-gradient(135deg,#003366,#3a5f94)" }}
+            >
+              Got it — I'll check back later
+            </button>
+          </div>
+        </div>
+      )}
       <style jsx global>{`
         .hg { font-family: 'Hanken Grotesk', sans-serif; }
         .hero-banner {
@@ -223,12 +305,6 @@ export default function FoundationalLearningPage() {
         <div className="hero-orb w-56 h-56 bg-indigo-300" style={{ bottom: "-40px", left: "10%" }} />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden bg-white/95 shadow shrink-0">
-              <img src="/images/nisir_bank_logo.svg" alt="Nisir Bank S.C." className="h-8 w-8 object-contain" />
-            </div>
-            <span className="text-white/70 text-xs font-semibold">Nisir Bank S.C.</span>
-          </div>
           <p className="text-blue-300 text-xs font-semibold tracking-widest uppercase mb-1">
             Security Education, Training &amp; Awareness
           </p>
@@ -249,10 +325,24 @@ export default function FoundationalLearningPage() {
 
           {/* Video card */}
           <div className="lg:col-span-2 section-card overflow-hidden">
-            <div className="bg-[#0a1628] flex flex-col items-center justify-center min-h-[280px] gap-3">
-              <span className="material-symbols-outlined text-[60px] text-[#3a5f94]">play_circle</span>
-              <p className="text-[#a7c8ff] text-[13px] font-semibold text-center px-6">{mod.title}</p>
-              <p className="text-[#5a7fa8] text-[11px]">Video module · launching soon</p>
+            <div className="bg-[#0a1628] flex flex-col items-center justify-center min-h-[280px] gap-4 relative overflow-hidden px-8">
+              <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,0.5) 39px,rgba(255,255,255,0.5) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,0.5) 39px,rgba(255,255,255,0.5) 40px)" }} />
+              <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-400/30 rounded-full px-4 py-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-amber-300 text-[10px] font-bold uppercase tracking-widest">Pending Upload</span>
+              </div>
+              <span
+                className="material-symbols-outlined text-[64px] text-[#3a5f94]"
+                style={{ fontVariationSettings: "'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 48" }}
+              >
+                video_library
+              </span>
+              <div className="text-center">
+                <p className="text-white text-[13px] font-semibold mb-1">{mod.title}</p>
+                <p className="text-[#5a7fa8] text-[11px] leading-relaxed max-w-xs mx-auto">
+                  Video content is being reviewed by the Security Operations team and will be available in the next update.
+                </p>
+              </div>
             </div>
 
             <div className="p-5">
@@ -263,11 +353,11 @@ export default function FoundationalLearningPage() {
                 <div className="flex-1 bg-[#e8e8ed] rounded-full h-2 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ width: activeKey === "intro" ? "45%" : "0%", background: "linear-gradient(90deg,#3a5f94,#a7c8ff)" }}
+                    style={{ width: "0%", background: "linear-gradient(90deg,#3a5f94,#a7c8ff)" }}
                   />
                 </div>
                 <span className="text-xs font-bold text-blue-700 whitespace-nowrap">
-                  {activeKey === "intro" ? "45%" : "0%"} Complete
+                  0% Complete
                 </span>
               </div>
 
@@ -276,22 +366,35 @@ export default function FoundationalLearningPage() {
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">
                   Downloadable Resources
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {RESOURCES.map((r) => (
-                    <a
-                      key={r.label}
-                      href="#"
-                      className="flex items-center gap-2.5 px-3 py-2.5 border border-[rgba(195,198,209,0.5)] rounded-xl bg-[#f8f9fc] hover:border-[#3a5f94] hover:bg-[#eef3fb] transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-red-500 text-xl">picture_as_pdf</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-gray-800 truncate">{r.label}</p>
-                        <p className="text-[10px] text-gray-400 uppercase">{r.meta}</p>
-                      </div>
-                      <span className="material-symbols-outlined text-gray-400 text-base">download</span>
-                    </a>
-                  ))}
-                </div>
+                {documents.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {documents.map((doc) => {
+                      const iconMap = { policy: "policy", training: "school", guide: "menu_book", form: "description", directive: "gavel", general: "folder" };
+                      const colorMap = { policy: "text-blue-600", training: "text-emerald-600", guide: "text-indigo-600", form: "text-orange-500", directive: "text-violet-600", general: "text-gray-500" };
+                      const icon = iconMap[doc.category] ?? "insert_drive_file";
+                      const color = colorMap[doc.category] ?? "text-gray-500";
+                      const sizeKb = doc.fileSize < 1024 * 1024 ? `${Math.round(doc.fileSize / 1024)} KB` : `${(doc.fileSize / (1024 * 1024)).toFixed(1)} MB`;
+                      return (
+                        <a
+                          key={doc.id}
+                          href={`/documents/${doc.storedName}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2.5 px-3 py-2.5 border border-[rgba(195,198,209,0.5)] rounded-xl bg-[#f8f9fc] hover:border-[#3a5f94] hover:bg-[#eef3fb] transition-colors no-underline"
+                        >
+                          <span className={`material-symbols-outlined ${color} text-xl`}>{icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-gray-800 truncate">{doc.title}</p>
+                            <p className="text-[10px] text-gray-400 uppercase">{doc.category} · {sizeKb}</p>
+                          </div>
+                          <span className="material-symbols-outlined text-gray-400 text-base">download</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 italic">No documents available yet. Check back after the next portal update.</p>
+                )}
               </div>
             </div>
           </div>
@@ -321,15 +424,15 @@ export default function FoundationalLearningPage() {
               <div className="space-y-4 relative z-10">
                 <div>
                   <p className="text-[11px] text-blue-300 mb-0.5">Learning Streak</p>
-                  <p className="hg text-2xl font-bold text-white">7 Days 🔥</p>
+                  <p className="hg text-2xl font-bold text-white">0 Days</p>
                 </div>
                 <div>
                   <p className="text-[11px] text-blue-300 mb-1">Modules Completed</p>
                   <div className="bg-white/20 rounded-full h-1.5 mb-1 overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: "12%", background: "linear-gradient(90deg,#3a5f94,#a7c8ff)" }} />
+                    <div className="h-full rounded-full" style={{ width: "0%", background: "linear-gradient(90deg,#3a5f94,#a7c8ff)" }} />
                   </div>
                   <p className="hg text-lg font-bold text-white">
-                    1 <span className="text-blue-300 text-sm font-normal">/ 8</span>
+                    0 <span className="text-blue-300 text-sm font-normal">/ 8</span>
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -361,7 +464,7 @@ export default function FoundationalLearningPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {MODULES.map((m) => (
-              <ModuleCard key={m.key} mod={m} active={m.key === activeKey} onSelect={select} />
+              <ModuleCard key={m.key} mod={m} active={m.key === activeKey} onSelect={select} onComingSoon={() => setModal(m)} />
             ))}
           </div>
         </section>
@@ -383,7 +486,7 @@ function InfoRow({ icon, color, label, value }) {
   );
 }
 
-function ModuleCard({ mod, active, onSelect }) {
+function ModuleCard({ mod, active, onSelect, onComingSoon }) {
   return (
     <article
       className={`bg-white rounded-[18px] flex flex-col p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_10px_32px_rgba(0,30,64,0.12)] ${
@@ -422,7 +525,7 @@ function ModuleCard({ mod, active, onSelect }) {
 
       <button
         type="button"
-        onClick={() => onSelect(mod.key)}
+        onClick={() => { onSelect(mod.key); onComingSoon(); }}
         className="w-full py-2 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 mb-3 transition-all hover:brightness-110 active:scale-[0.98]"
         style={{ background: mod.priority ? "linear-gradient(135deg,#ba1a1a,#e53935)" : "linear-gradient(135deg,#003366,#3a5f94)" }}
       >
@@ -439,6 +542,7 @@ function ModuleCard({ mod, active, onSelect }) {
           <button
             key={lbl}
             type="button"
+            onClick={onComingSoon}
             className="flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 border border-[rgba(195,198,209,0.5)] rounded-xl bg-[#f8f9fc] hover:border-[#3a5f94] hover:bg-[#eef3fb] transition-colors"
           >
             <span className={`material-symbols-outlined ${cls} text-base`}>{icon}</span>

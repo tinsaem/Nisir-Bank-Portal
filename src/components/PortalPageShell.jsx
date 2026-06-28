@@ -9,10 +9,6 @@ export default function PortalPageShell({ eyebrow, title, children, backHref = "
         <div className="flex items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-3">
             <img src="/images/nisir_bank_logo.svg" alt="Nisir Bank S.C." className="h-10 w-auto" />
-            <div>
-              <p className="text-[11px] font-bold text-gray-700 leading-tight">Nisir Bank S.C.</p>
-              <p className="text-[10px] text-gray-400 leading-tight">Employee Portal</p>
-            </div>
           </div>
 
           <Link

@@ -203,12 +203,6 @@ export default function AdminDashboardPage() {
 
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden bg-white/95 shadow shrink-0">
-                <img src="/images/nisir_bank_logo.svg" alt="Nisir Bank S.C." className="h-8 w-8 object-contain" />
-              </div>
-              <span className="text-white/70 text-xs font-semibold">Nisir Bank S.C.</span>
-            </div>
             <p className="text-blue-300 text-xs font-semibold tracking-widest uppercase mb-1">
               SETA Program Administration
             </p>
@@ -218,14 +212,32 @@ export default function AdminDashboardPage() {
             <p className="text-blue-200 text-sm mt-2">
               Manage the internal-mail awareness simulation and review employee results.
             </p>
-            <Link
-              href="/admin/research"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-200 hover:text-white mt-3"
-            >
-              <span className="material-symbols-outlined text-base">analytics</span>
-              Open Research Dashboard
-              <span className="material-symbols-outlined text-base">arrow_forward</span>
-            </Link>
+            <div className="flex flex-wrap gap-4 mt-3">
+              <Link
+                href="/admin/research"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-200 hover:text-white"
+              >
+                <span className="material-symbols-outlined text-base">analytics</span>
+                Open Research Dashboard
+                <span className="material-symbols-outlined text-base">arrow_forward</span>
+              </Link>
+              <Link
+                href="/admin/documents"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-200 hover:text-white"
+              >
+                <span className="material-symbols-outlined text-base">folder_open</span>
+                Manage Documents
+                <span className="material-symbols-outlined text-base">arrow_forward</span>
+              </Link>
+              <Link
+                href="/admin/policy-check"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-200 hover:text-white"
+              >
+                <span className="material-symbols-outlined text-base">quiz</span>
+                ISP Self-Check Questions
+                <span className="material-symbols-outlined text-base">arrow_forward</span>
+              </Link>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-3">

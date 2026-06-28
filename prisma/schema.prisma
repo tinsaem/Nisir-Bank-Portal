@@ -38,6 +38,7 @@ model HrEmployee {
   employeeId String   @unique
   fullName   String
   email      String
+  department String   @default("Retail Banking")
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -95,6 +96,93 @@ model InternalEmail {
   updatedAt      DateTime        @updatedAt
 
   deliveries EmployeeEmail[]
+}
+
+// ISP Self-Check quiz system.
+model PolicyQuestion {
+  id          String          @id @default(cuid())
+  question    String
+  explanation String?         // shown after the employee answers
+  isActive    Boolean         @default(true)
+  order       Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  choices     PolicyChoice[]
+  attempts    PolicyAttempt[]
+}
+
+model PolicyChoice {
+  id         String         @id @default(cuid())
+  questionId String
+  text       String
+  isCorrect  Boolean        @default(false)
+  order      Int            @default(0)
+  question   PolicyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model PolicyAttempt {
+  id          String         @id @default(cuid())
+  employeeId  String
+  questionId  String
+  choiceId    String
+  isCorrect   Boolean
+  attemptedAt DateTime       @default(now())
+  question    PolicyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+// Admin-uploaded documents (policies, training materials, guides, forms).
+// Stored in public/documents/ and served as static files.
+model Document {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String   @default("general")
+  fileName    String
+  storedName  String   @unique
+  fileSize    Int
+  mimeType    String
+  uploadedBy  String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Employee-created discussion threads and replies for the collaborative forum.
+model Discussion {
+  id         String            @id @default(cuid())
+  employeeId String
+  authorName String
+  title      String
+  body       String
+  category   String            @default("general")
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  replies    DiscussionReply[]
+}
+
+model DiscussionReply {
+  id           String     @id @default(cuid())
+  discussionId String
+  employeeId   String
+  authorName   String
+  body         String
+  createdAt    DateTime   @default(now())
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+}
+
+// Emoji reactions on discussions and replies.
+// targetId is either a Discussion.id or DiscussionReply.id.
+// One reaction per employee per target (unique constraint enforces toggle-replace behaviour).
+model DiscussionReaction {
+  id         String   @id @default(cuid())
+  targetId   String
+  targetType String   // "discussion" | "reply"
+  employeeId String
+  authorName String
+  emoji      String
+  createdAt  DateTime @default(now())
+
+  @@unique([targetId, employeeId])
 }
 
 // One employee's copy of an InternalEmail, tracking whether they've read it,

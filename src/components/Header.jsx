@@ -41,7 +41,7 @@ export default function Header() {
     name: account.fullName,
     id: account.employeeId,
     role: account.role === "ADMIN" ? "Administrator" : "Employee",
-    tokens: 0,
+    tokens: account.tokens ?? 0,
   };
 
   const initials = user.name

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import EmployeeNav from "@/components/EmployeeNav";
 
 const TAG_STYLES = {
   security: { bg: "bg-rose-50", text: "text-rose-600", icon: "shield" },
@@ -59,10 +60,19 @@ export default function InternalEmailPage() {
   const [account, setAccount] = useState(null);
   const [emails, setEmails] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
-  const [pendingAction, setPendingAction] = useState({});
-  const [replyOpen, setReplyOpen] = useState(false);
-  const [replyDraft, setReplyDraft] = useState("");
-  const [credentialDraft, setCredentialDraft] = useState({ employeeId: "", password: "" });
+  const [policyDocs, setPolicyDocs] = useState([]);
+  const [policyOpen, setPolicyOpen] = useState(false);
+
+  // Quiz state
+  const [quizOpen,       setQuizOpen]       = useState(false);
+  const [quizQuestions,  setQuizQuestions]  = useState([]);
+  const [quizIdx,        setQuizIdx]        = useState(0);
+  const [quizChoice,     setQuizChoice]     = useState(null);
+  const [quizResult,     setQuizResult]     = useState(null);
+  const [quizScore,      setQuizScore]      = useState(0);
+  const [quizDone,       setQuizDone]       = useState(false);
+  const [quizSubmitting, setQuizSubmitting] = useState(false);
+  const [quizLoading,    setQuizLoading]    = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("currentUser");
@@ -87,10 +97,72 @@ export default function InternalEmailPage() {
         if (data.emails.length > 0) setSelectedId(data.emails[0].id);
       });
 
+    fetch("/api/documents?categories=policy")
+      .then((res) => res.json())
+      .then((data) => { if (!cancelled && data.success) setPolicyDocs(data.documents); })
+      .catch(() => {});
+
     return () => {
       cancelled = true;
     };
   }, [account]);
+
+  async function openQuiz() {
+    setQuizLoading(true);
+    try {
+      const r = await fetch("/api/policy-check");
+      const d = await r.json();
+      if (d.success && d.questions.length > 0) {
+        setQuizQuestions(d.questions);
+        setQuizIdx(0);
+        setQuizChoice(null);
+        setQuizResult(null);
+        setQuizScore(0);
+        setQuizDone(false);
+        setQuizOpen(true);
+      } else {
+        alert("No self-check questions are available at this time.");
+      }
+    } catch {
+      alert("Could not load self-check questions. Please try again later.");
+    }
+    setQuizLoading(false);
+  }
+
+  async function submitQuizAnswer() {
+    if (!quizChoice || quizSubmitting) return;
+    setQuizSubmitting(true);
+    const q = quizQuestions[quizIdx];
+    try {
+      const r = await fetch("/api/policy-check/attempt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionId: q.id, choiceId: quizChoice }),
+      });
+      const d = await r.json();
+      if (d.success) {
+        setQuizResult({ isCorrect: d.isCorrect, explanation: d.explanation });
+        if (d.isCorrect) setQuizScore((s) => s + 1);
+      }
+    } catch { /* best-effort */ }
+    setQuizSubmitting(false);
+  }
+
+  function nextQuestion() {
+    if (quizIdx + 1 >= quizQuestions.length) {
+      setQuizDone(true);
+    } else {
+      setQuizIdx((i) => i + 1);
+      setQuizChoice(null);
+      setQuizResult(null);
+    }
+  }
+
+  function closeQuiz() {
+    setQuizOpen(false);
+    setQuizResult(null);
+    setQuizChoice(null);
+  }
 
   if (!account || !emails) {
     return <main className="min-h-screen bg-[#f0f4fb]" />;
@@ -106,10 +178,6 @@ export default function InternalEmailPage() {
 
   function openEmail(id) {
     setSelectedId(id);
-    setReplyOpen(false);
-    setReplyDraft("");
-    setCredentialDraft({ employeeId: "", password: "" });
-
     const email = emails.find((e) => e.id === id);
     if (email && !email.isRead) {
       patchLocal(id, { isRead: true });
@@ -118,85 +186,20 @@ export default function InternalEmailPage() {
   }
 
   async function sendReply() {
-    if (!replyDraft.trim() || !selectedEmail) return;
-    const text = replyDraft.trim();
-    patchLocal(selectedEmail.id, { actionStatus: "replied", actionText: text, actionAt: new Date().toISOString() });
-    setReplyDraft("");
-    setReplyOpen(false);
+    if (!selectedEmail || selectedEmail.actionStatus === "replied") return;
+    patchLocal(selectedEmail.id, { actionStatus: "replied", actionAt: new Date().toISOString() });
     try {
-      await patchEmail(selectedEmail.id, { action: { status: "replied", text } });
+      await patchEmail(selectedEmail.id, { action: { status: "replied", text: "" } });
     } catch {
-      // local state already reflects the reply; a failed network sync isn't worth blocking the UI for
+      // best-effort sync
     }
-  }
-
-  function withPending(id, isPending) {
-    setPendingAction((prev) => ({ ...prev, [id]: isPending }));
-  }
-
-  async function submitCredentials(e) {
-    e.preventDefault();
-    if (!selectedEmail) return;
-    const id = selectedEmail.id;
-    setCredentialDraft({ employeeId: "", password: "" });
-    withPending(id, "verifying");
-    setTimeout(async () => {
-      withPending(id, false);
-      patchLocal(id, { actionStatus: "verified", actionAt: new Date().toISOString() });
-      try {
-        await patchEmail(id, { action: { status: "verified" }, dv2: true });
-      } catch {
-        // best-effort sync
-      }
-    }, 900);
-  }
-
-  function downloadAttachment() {
-    if (!selectedEmail) return;
-    const id = selectedEmail.id;
-    withPending(id, "downloading");
-    setTimeout(async () => {
-      withPending(id, false);
-      patchLocal(id, { actionStatus: "downloaded", actionAt: new Date().toISOString() });
-      try {
-        await patchEmail(id, { action: { status: "downloaded" } });
-      } catch {
-        // best-effort sync
-      }
-    }, 900);
   }
 
   function takeLinkAction() {
     if (!selectedEmail) return;
     const id = selectedEmail.id;
-    withPending(id, "opening");
-    setTimeout(async () => {
-      withPending(id, false);
-      patchLocal(id, { actionStatus: "done", actionAt: new Date().toISOString() });
-      try {
-        await patchEmail(id, { action: { status: "done" }, dv1: true });
-      } catch {
-        // best-effort sync
-      }
-    }, 700);
-  }
-
-  function recordCredentialInteraction() {
-    if (!selectedEmail) return;
-    patchEmail(selectedEmail.id, { dv1: true }).catch(() => {
-      // best-effort sync
-    });
-  }
-
-  async function approveRequest(approved) {
-    if (!selectedEmail) return;
-    const status = approved ? "approved" : "declined";
-    patchLocal(selectedEmail.id, { actionStatus: status, actionAt: new Date().toISOString() });
-    try {
-      await patchEmail(selectedEmail.id, { action: { status } });
-    } catch {
-      // best-effort sync
-    }
+    patchLocal(id, { actionStatus: "done", actionAt: new Date().toISOString() });
+    patchEmail(id, { action: { status: "done" }, dv1: true }).catch(() => {});
   }
 
   async function archiveEmail() {
@@ -213,10 +216,10 @@ export default function InternalEmailPage() {
   }
 
   const tagStyle = selectedEmail ? TAG_STYLES[selectedEmail.tag] : null;
-  const currentPending = selectedEmail ? pendingAction[selectedEmail.id] : false;
 
   return (
     <main className="min-h-screen bg-[#f0f4fb] text-[#1a1c1f]">
+      <EmployeeNav />
       <style jsx global>{`
         .hg {
           font-family: "Hanken Grotesk", sans-serif;
@@ -315,12 +318,6 @@ export default function InternalEmailPage() {
 
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden bg-white/95 shadow shrink-0">
-                <img src="/images/nisir_bank_logo.svg" alt="Nisir Bank S.C." className="h-8 w-8 object-contain" />
-              </div>
-              <span className="text-white/70 text-xs font-semibold">Nisir Bank S.C.</span>
-            </div>
             <p className="text-blue-300 text-xs font-semibold tracking-widest uppercase mb-1">
               Internal Mail
             </p>
@@ -358,6 +355,94 @@ export default function InternalEmailPage() {
           <span className="material-symbols-outlined text-base">arrow_back</span>
           Back to Dashboard
         </Link>
+
+        {/* ── Policy & Reference Documents ── */}
+        <div className="mb-6 rounded-2xl overflow-hidden border border-indigo-100" style={{ background: "linear-gradient(135deg,#f0f4ff 0%,#f8faff 60%,#fff 100%)" }}>
+            {/* Header */}
+            <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-indigo-100 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-white text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>policy</span>
+                </div>
+                <div>
+                  <h2 className="hg text-sm font-bold text-indigo-900">Information Security Policies (ISP)</h2>
+                  <p className="text-[11px] text-indigo-400">
+                    {policyDocs.length > 0 ? `${policyDocs.length} policy document${policyDocs.length !== 1 ? "s" : ""} · Click any to open` : "Policy library"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={openQuiz}
+                  disabled={quizLoading}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-60 transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  style={{ background: "linear-gradient(135deg,#4338ca,#6366f1)" }}
+                >
+                  <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>quiz</span>
+                  {quizLoading ? "Loading…" : "Take ISP Self-Check"}
+                </button>
+                {policyDocs.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setPolicyOpen((v) => !v)}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
+                  >
+                    {policyOpen ? "Collapse" : "Expand"}
+                    <span className="material-symbols-outlined text-sm" style={{ transform: policyOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+                      expand_more
+                    </span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Document grid */}
+            {policyOpen && policyDocs.length > 0 && (
+              <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {policyDocs.map((doc) => {
+                  const CAT = {
+                    policy:    { icon: "policy",      color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-100"   },
+                    directive: { icon: "gavel",        color: "text-violet-700", bg: "bg-violet-50", border: "border-violet-100" },
+                    guide:     { icon: "menu_book",    color: "text-indigo-700", bg: "bg-indigo-50", border: "border-indigo-100" },
+                    training:  { icon: "school",       color: "text-emerald-700",bg: "bg-emerald-50",border: "border-emerald-100"},
+                    form:      { icon: "description",  color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100" },
+                    general:   { icon: "folder",       color: "text-gray-600",   bg: "bg-gray-50",   border: "border-gray-100"   },
+                  }[doc.category] ?? { icon: "description", color: "text-gray-600", bg: "bg-gray-50", border: "border-gray-100" };
+
+                  return (
+                    <a
+                      key={doc.id}
+                      href={`/documents/${doc.storedName}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group flex items-start gap-3 p-3.5 rounded-xl border ${CAT.border} bg-white hover:shadow-md hover:-translate-y-0.5 transition-all`}
+                    >
+                      <div className={`w-9 h-9 rounded-lg ${CAT.bg} flex items-center justify-center shrink-0 mt-0.5`}>
+                        <span className={`material-symbols-outlined text-lg ${CAT.color}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                          {CAT.icon}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-bold text-gray-800 leading-snug group-hover:text-indigo-700 transition-colors line-clamp-2">
+                          {doc.title}
+                        </p>
+                        {doc.description && (
+                          <p className="text-[11px] text-gray-400 mt-1 line-clamp-1">{doc.description}</p>
+                        )}
+                        <span className={`inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${CAT.bg} ${CAT.color}`}>
+                          {doc.category}
+                        </span>
+                      </div>
+                      <span className="material-symbols-outlined text-sm text-gray-300 group-hover:text-indigo-500 shrink-0 mt-0.5 transition-colors">
+                        open_in_new
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
         <div className="section-card grid grid-cols-1 lg:grid-cols-[360px_1fr] overflow-hidden">
           <div className="border-b lg:border-b-0 lg:border-r border-gray-100 max-h-[640px] overflow-y-auto">
@@ -459,10 +544,14 @@ export default function InternalEmailPage() {
                     <button
                       type="button"
                       className="toolbar-btn"
-                      onClick={() => setReplyOpen((open) => !open)}
+                      onClick={sendReply}
                     >
                       <span className="material-symbols-outlined text-base">reply</span>
-                      Reply
+                      {selectedEmail.actionStatus === "replied" ? "Replied ✓" : "Reply"}
+                    </button>
+                    <button type="button" className="toolbar-btn" onClick={() => {}}>
+                      <span className="material-symbols-outlined text-base">forward</span>
+                      Forward
                     </button>
                     <button type="button" className="toolbar-btn" onClick={archiveEmail}>
                       <span className="material-symbols-outlined text-base">archive</span>
@@ -495,95 +584,189 @@ export default function InternalEmailPage() {
                       !selectedEmail.isRead ? "text-gray-900 font-medium" : "text-gray-500"
                     }`}
                   >
-                    {renderBody(selectedEmail, currentPending, takeLinkAction)}
+                    {renderBody(selectedEmail, takeLinkAction)}
                   </p>
                 </div>
 
-                <EmailActionPanel
-                  email={selectedEmail}
-                  pending={currentPending}
-                  onApprove={approveRequest}
-                  onDownload={downloadAttachment}
-                  onSubmitCredentials={submitCredentials}
-                  onCredentialFocus={recordCredentialInteraction}
-                  credentialDraft={credentialDraft}
-                  setCredentialDraft={setCredentialDraft}
-                  onOpenReply={() => setReplyOpen(true)}
-                />
-
-                <div className="mt-6 pt-6 border-t border-gray-100 sm:hidden flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="toolbar-btn"
-                    onClick={() => setReplyOpen((open) => !open)}
-                  >
-                    <span className="material-symbols-outlined text-base">reply</span>
-                    Reply
-                  </button>
-                  <button type="button" className="toolbar-btn" onClick={archiveEmail}>
-                    <span className="material-symbols-outlined text-base">archive</span>
-                    Archive
-                  </button>
-                </div>
-
-                {selectedEmail.actionStatus === "replied" && (
-                  <div className="mt-6 bg-gray-50 border border-gray-100 rounded-xl p-4">
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
-                      You replied
-                      {selectedEmail.actionAt ? ` · ${formatRelativeTime(selectedEmail.actionAt)}` : ""}
-                    </p>
-                    <p className="text-sm text-gray-700 whitespace-pre-line">
-                      {selectedEmail.actionText}
-                    </p>
-                  </div>
-                )}
-
-                {replyOpen && (
-                  <div className="mt-6">
-                    <textarea
-                      value={replyDraft}
-                      onChange={(e) => setReplyDraft(e.target.value)}
-                      placeholder="Write your reply…"
-                      rows={4}
-                      className="w-full rounded-xl border border-gray-200 p-3.5 text-sm text-gray-800 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                    />
-                    <div className="flex items-center justify-end gap-2 mt-2.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReplyOpen(false);
-                          setReplyDraft("");
-                        }}
-                        className="text-xs font-bold text-gray-500 hover:text-gray-700 px-3 py-2"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={sendReply}
-                        disabled={!replyDraft.trim()}
-                        className="bg-blue-700 hover:bg-blue-800 disabled:opacity-40 text-white text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-1.5"
-                      >
-                        Send
-                        <span className="material-symbols-outlined text-sm">send</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
               </>
             )}
           </div>
         </div>
       </section>
+
+      {/* ── ISP Self-Check Quiz Modal ── */}
+      {quizOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,15,40,0.82)", backdropFilter: "blur(6px)" }}
+          onClick={closeQuiz}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="px-7 py-5 flex items-center justify-between" style={{ background: "linear-gradient(135deg,#312e81,#4338ca)" }}>
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>quiz</span>
+                <div>
+                  <p className="text-[10px] font-bold text-indigo-200 uppercase tracking-widest">ISP Self-Check</p>
+                  <p className="text-sm font-bold text-white">
+                    {quizDone ? "Results" : `Question ${quizIdx + 1} of ${quizQuestions.length}`}
+                  </p>
+                </div>
+              </div>
+              <button type="button" onClick={closeQuiz} className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+
+            {/* Progress bar */}
+            {!quizDone && (
+              <div className="h-1 bg-indigo-100">
+                <div
+                  className="h-1 bg-indigo-500 transition-all duration-500"
+                  style={{ width: `${((quizIdx + (quizResult ? 1 : 0)) / quizQuestions.length) * 100}%` }}
+                />
+              </div>
+            )}
+
+            <div className="px-7 py-6">
+              {quizDone ? (
+                /* ── Final score screen ── */
+                <div className="text-center">
+                  <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-4 ${quizScore >= quizQuestions.length * 0.7 ? "bg-emerald-100" : "bg-amber-100"}`}>
+                    <span className={`material-symbols-outlined text-4xl ms-fill ${quizScore >= quizQuestions.length * 0.7 ? "text-emerald-500" : "text-amber-500"}`}>
+                      {quizScore >= quizQuestions.length * 0.7 ? "verified" : "emoji_events"}
+                    </span>
+                  </div>
+                  <p className="hg text-2xl font-bold text-gray-900">{quizScore} / {quizQuestions.length}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {quizScore === quizQuestions.length
+                      ? "Perfect score! Excellent policy knowledge."
+                      : quizScore >= Math.ceil(quizQuestions.length * 0.7)
+                      ? "Good job! Keep reviewing the policies."
+                      : "Keep studying — review the ISP documents above."}
+                  </p>
+                  <div className="mt-6 flex gap-3">
+                    <button type="button" onClick={closeQuiz} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50">
+                      Close
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setQuizIdx(0); setQuizChoice(null); setQuizResult(null); setQuizScore(0); setQuizDone(false); }}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
+                      style={{ background: "linear-gradient(135deg,#4338ca,#6366f1)" }}
+                    >
+                      Retake Quiz
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ── Question screen ── */
+                <>
+                  <p className="text-base font-bold text-gray-900 leading-snug mb-5">
+                    {quizQuestions[quizIdx].question}
+                  </p>
+
+                  <div className="space-y-2.5 mb-6">
+                    {quizQuestions[quizIdx].choices.map((c, ci) => {
+                      const isSelected = quizChoice === c.id;
+                      const isAnswered = quizResult !== null;
+
+                      let borderColor = "border-gray-200";
+                      let bgColor     = "bg-gray-50 hover:bg-gray-100";
+                      let textColor   = "text-gray-800";
+
+                      if (isAnswered) {
+                        bgColor     = "bg-gray-50";
+                        borderColor = "border-gray-100";
+                      }
+                      if (isSelected && isAnswered) {
+                        if (quizResult.isCorrect) {
+                          borderColor = "border-emerald-400";
+                          bgColor     = "bg-emerald-50";
+                          textColor   = "text-emerald-800";
+                        } else {
+                          borderColor = "border-red-400";
+                          bgColor     = "bg-red-50";
+                          textColor   = "text-red-800";
+                        }
+                      } else if (isSelected) {
+                        borderColor = "border-indigo-400";
+                        bgColor     = "bg-indigo-50";
+                        textColor   = "text-indigo-800";
+                      }
+
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          disabled={isAnswered}
+                          onClick={() => setQuizChoice(c.id)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left text-sm font-medium transition-all ${borderColor} ${bgColor} ${textColor} disabled:cursor-default`}
+                        >
+                          <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 text-[10px] font-black transition-colors ${isSelected ? (isAnswered ? (quizResult.isCorrect ? "border-emerald-500 bg-emerald-500 text-white" : "border-red-500 bg-red-500 text-white") : "border-indigo-500 bg-indigo-500 text-white") : "border-gray-300"}`}>
+                            {String.fromCharCode(65 + ci)}
+                          </span>
+                          {c.text}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Feedback */}
+                  {quizResult && (
+                    <div className={`rounded-xl p-4 mb-5 ${quizResult.isCorrect ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"}`}>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`material-symbols-outlined text-lg ms-fill ${quizResult.isCorrect ? "text-emerald-500" : "text-red-500"}`}>
+                          {quizResult.isCorrect ? "check_circle" : "cancel"}
+                        </span>
+                        <p className={`text-sm font-bold ${quizResult.isCorrect ? "text-emerald-800" : "text-red-800"}`}>
+                          {quizResult.isCorrect ? "Correct!" : "Incorrect"}
+                        </p>
+                      </div>
+                      {quizResult.explanation && (
+                        <p className="text-xs text-gray-600 leading-relaxed">{quizResult.explanation}</p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    {!quizResult ? (
+                      <button
+                        type="button"
+                        onClick={submitQuizAnswer}
+                        disabled={!quizChoice || quizSubmitting}
+                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40 transition-all"
+                        style={{ background: "linear-gradient(135deg,#4338ca,#6366f1)" }}
+                      >
+                        {quizSubmitting ? "Checking…" : "Submit Answer"}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={nextQuestion}
+                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
+                        style={{ background: "linear-gradient(135deg,#4338ca,#6366f1)" }}
+                      >
+                        {quizIdx + 1 >= quizQuestions.length ? "See Results" : "Next Question →"}
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
 
-function InlineAction({ email, pending, onTakeLinkAction }) {
+function InlineAction({ email, onTakeLinkAction }) {
   const isDone = email.actionStatus === "done";
-  const isOpening = pending === "opening";
-  const label = isOpening ? "Opening…" : isDone ? `${email.actionLabel} ✓` : email.actionLabel;
-
+  const label = isDone ? `${email.actionLabel} ✓` : email.actionLabel;
   const className = `font-semibold underline decoration-[1.5px] ${
     isDone ? "text-emerald-700" : "text-blue-700 hover:text-blue-800"
   }`;
@@ -597,159 +780,23 @@ function InlineAction({ email, pending, onTakeLinkAction }) {
   }
 
   return (
-    <button type="button" onClick={onTakeLinkAction} disabled={isOpening || isDone} className={className}>
+    <button type="button" onClick={onTakeLinkAction} disabled={isDone} className={className}>
       {label}
     </button>
   );
 }
 
-function renderBody(email, pending, onTakeLinkAction) {
+function renderBody(email, onTakeLinkAction) {
   if (email.actionType !== "link" || !email.body.includes("%%LINK%%")) {
     return email.body;
   }
-
   const [before, after] = email.body.split("%%LINK%%");
   return (
     <>
       {before}
-      <InlineAction email={email} pending={pending} onTakeLinkAction={onTakeLinkAction} />
+      <InlineAction email={email} onTakeLinkAction={onTakeLinkAction} />
       {after}
     </>
   );
 }
 
-function EmailActionPanel({
-  email,
-  pending,
-  onApprove,
-  onDownload,
-  onSubmitCredentials,
-  onCredentialFocus,
-  credentialDraft,
-  setCredentialDraft,
-  onOpenReply,
-}) {
-  if (email.actionType === "info" || email.actionType === "link") return null;
-
-  if (email.actionType === "reply") {
-    if (email.actionStatus === "replied") return null;
-
-    return (
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-gray-700">{email.replyPrompt}</p>
-        <button
-          type="button"
-          onClick={onOpenReply}
-          className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold px-4 py-2 rounded-xl inline-flex items-center gap-1.5 shrink-0"
-        >
-          <span className="material-symbols-outlined text-base">reply</span>
-          Reply Now
-        </button>
-      </div>
-    );
-  }
-
-  if (email.actionType === "approve") {
-    if (email.actionStatus === "approved" || email.actionStatus === "declined") {
-      return (
-        <p className="text-sm font-semibold text-gray-700">
-          {email.actionStatus === "approved" ? `✓ ${email.approveLabel}` : `✓ ${email.declineLabel}`}
-        </p>
-      );
-    }
-
-    return (
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={() => onApprove(true)}
-          className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-800 text-sm font-bold px-4 py-2 rounded-xl"
-        >
-          {email.approveLabel}
-        </button>
-        <button
-          type="button"
-          onClick={() => onApprove(false)}
-          className="bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold px-4 py-2 rounded-xl"
-        >
-          {email.declineLabel}
-        </button>
-      </div>
-    );
-  }
-
-  if (email.actionType === "attachment") {
-    const isDownloading = pending === "downloading";
-    const isDownloaded = email.actionStatus === "downloaded";
-
-    return (
-      <div className="flex items-center gap-4">
-        <div className="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
-          <span className="material-symbols-outlined text-teal-700 text-2xl">
-            description
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-gray-900 truncate">{email.attachmentName}</p>
-          <p className="text-xs text-gray-500">{email.attachmentSize}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onDownload}
-          disabled={isDownloading || isDownloaded}
-          className="bg-gray-900 hover:bg-black disabled:opacity-60 text-white text-xs font-bold px-4 py-2.5 rounded-lg inline-flex items-center gap-1.5 shrink-0"
-        >
-          {isDownloading ? "Downloading…" : isDownloaded ? "✓ Downloaded" : "Download"}
-        </button>
-      </div>
-    );
-  }
-
-  if (email.actionType === "credential") {
-    if (email.actionStatus === "verified") {
-      return (
-        <p className="text-sm font-semibold text-emerald-800">
-          ✓ Verified — thank you for confirming your identity.
-        </p>
-      );
-    }
-
-    const isVerifying = pending === "verifying";
-
-    return (
-      <form onSubmit={onSubmitCredentials} className="space-y-3 max-w-sm">
-        <input
-          type="text"
-          placeholder="Employee ID"
-          value={credentialDraft.employeeId}
-          onFocus={onCredentialFocus}
-          onChange={(e) =>
-            setCredentialDraft((prev) => ({ ...prev, employeeId: e.target.value }))
-          }
-          className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={credentialDraft.password}
-          onFocus={onCredentialFocus}
-          onChange={(e) =>
-            setCredentialDraft((prev) => ({ ...prev, password: e.target.value }))
-          }
-          className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-        />
-
-        <button
-          type="submit"
-          disabled={isVerifying}
-          className="bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white text-sm font-bold px-5 py-2.5 rounded-xl"
-        >
-          {isVerifying ? "Verifying…" : email.actionLabel}
-        </button>
-      </form>
-    );
-  }
-
-  return null;
-}

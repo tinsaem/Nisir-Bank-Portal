@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import EmployeeNav from "@/components/EmployeeNav";
 
 const MOCK_STATS = {
   branch: "Addis Ababa",
@@ -95,6 +96,7 @@ export default function EmployeeDashboardPage() {
 
   return (
     <main className="min-h-screen bg-[#f0f4fb] text-[#1a1c1f]">
+      <EmployeeNav />
       <style jsx global>{`
         .hg {
           font-family: "Hanken Grotesk", sans-serif;
@@ -204,9 +206,7 @@ export default function EmployeeDashboardPage() {
             </h1>
 
             <p className="text-blue-200 text-sm mt-2">
-              You're on a{" "}
-              <span className="text-yellow-300 font-bold">7-day streak</span> — keep it
-              up to earn a 2× token bonus!
+              Complete your first module to start building your security streak.
             </p>
           </div>
 
@@ -346,7 +346,7 @@ export default function EmployeeDashboardPage() {
             title="Collaborative Learning"
             description="Collaborative forums and community-driven security tips."
             bullets={["Employee discussions", "Shared experiences"]}
-            progress={78}
+            progress={0}
             href="/collaborative_work_space"
             buttonText="Open Communities"
             orange
@@ -362,7 +362,7 @@ export default function EmployeeDashboardPage() {
           purple
         >
           <CertificationCard certPercent={certPercent} tokens={tokens} />
-          <LeaderboardCard leaderboard={sortedLeaderboard} currentUserId={user.id} />
+          <LeaderboardCard leaderboard={sortedLeaderboard} currentUserId={user.id} userName={user.name} />
           <ChallengeCard />
         </DashboardSection>
 
@@ -380,12 +380,11 @@ export default function EmployeeDashboardPage() {
               </p>
 
               <h3 className="hg text-white text-xl font-bold">
-                Advanced Phishing Defense
+                Phishing Awareness Basics
               </h3>
 
               <p className="text-blue-200 text-xs mt-1">
-                Based on your recent simulation results, this module will close your
-                biggest vulnerability gap.
+                Start here to build your phishing detection skills and earn your first ISP tokens.
               </p>
             </div>
 
@@ -405,10 +404,10 @@ export default function EmployeeDashboardPage() {
           </div>
 
           <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-            <StatCard icon="local_fire_department" value="7" label="Day Streak" />
-            <StatCard icon="emoji_events" value="3" label="Badges Earned" />
-            <StatCard icon="quiz" value="94%" label="Quiz Accuracy" />
-            <StatCard icon="timer" value="4.2h" label="Time This Week" />
+            <StatCard icon="local_fire_department" value="0" label="Day Streak" />
+            <StatCard icon="emoji_events" value="0" label="Badges Earned" />
+            <StatCard icon="quiz" value="—" label="Quiz Accuracy" />
+            <StatCard icon="timer" value="0h" label="Time This Week" />
           </div>
         </section>
       </section>
@@ -682,50 +681,54 @@ function CertificationCard({ certPercent, tokens }) {
   );
 }
 
-function LeaderboardCard({ leaderboard, currentUserId }) {
-  const medals = ["🥇", "🥈", "🥉"];
+function LeaderboardCard({ leaderboard, currentUserId, userName }) {
+  const PRIZES = [
+    { medal: "🥇", rank: "1st Place", bonus: "2× Token Multiplier", cls: "bg-yellow-50 border-yellow-200", textCls: "text-yellow-800" },
+    { medal: "🥈", rank: "2nd Place", bonus: "1.5× Multiplier + 500 ISP", cls: "bg-slate-50 border-slate-200", textCls: "text-slate-700" },
+    { medal: "🥉", rank: "3rd Place", bonus: "+300 Bonus ISP Tokens", cls: "bg-orange-50 border-orange-100", textCls: "text-orange-700" },
+  ];
 
   return (
-    <div className="section-card p-6">
-      <h4 className="hg font-bold text-gray-900 text-base mb-1">Global Rankings</h4>
-
-      <p className="text-gray-500 text-xs mb-5">
-        Top players earn a 2× token multiplier.
-      </p>
-
-      <div className="space-y-2 mb-5">
-        {leaderboard.slice(0, 3).map((entry, index) => (
-          <div
-            key={entry.id}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-100"
-          >
-            <span className="font-bold text-sm w-5 text-center">{medals[index]}</span>
-
-            <div className="w-7 h-7 rounded-full bg-blue-800 flex items-center justify-center text-white text-[10px] font-bold">
-              {getInitials(entry.name)}
+    <div className="section-card p-6 flex flex-col">
+      <div className="flex items-center justify-between mb-1">
+        <h4 className="hg font-bold text-gray-900 text-base">Global Rankings</h4>
+        <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+          Live
+        </span>
+      </div>
+      {/* Current Standings */}
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Current Standings</p>
+      <div className="space-y-1.5 mb-3">
+        {["🥇", "🥈", "🥉"].map((medal, i) => (
+          <div key={i} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-gray-50 border border-dashed border-gray-200">
+            <span className="text-base w-5 text-center">{medal}</span>
+            <div className="flex-1">
+              <div className="h-1.5 w-20 bg-gray-200 rounded-full" />
             </div>
-
-            <span
-              className={`flex-1 text-sm ${
-                entry.id === currentUserId ? "font-bold text-blue-800" : "text-gray-700"
-              }`}
-            >
-              {entry.name}
-              {entry.id === currentUserId ? " (You)" : ""}
-            </span>
-
-            <span className="text-xs font-bold text-blue-700">
-              {entry.tokens.toLocaleString()} ISP
-            </span>
+            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wide">Unclaimed</span>
           </div>
         ))}
       </div>
 
+      {/* Your position */}
+      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-blue-50 border border-blue-200 mb-4">
+        <span className="text-[10px] font-bold text-blue-400 w-5 text-center">—</span>
+        <div className="w-7 h-7 rounded-full bg-blue-700 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+          {getInitials(userName)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold text-blue-900 truncate">You</p>
+          <p className="text-[10px] text-blue-500">Unranked — complete a module to enter</p>
+        </div>
+        <span className="text-xs font-bold text-blue-700 shrink-0">0 ISP</span>
+      </div>
+
       <Link
         href="/leaderboard"
-        className="mt-auto w-full py-2.5 bg-gray-50 hover:bg-blue-700 hover:text-white text-blue-700 text-sm font-bold rounded-xl text-center block"
+        className="mt-auto w-full py-2.5 bg-gray-50 hover:bg-blue-700 hover:text-white text-blue-700 text-sm font-bold rounded-xl text-center block transition-colors"
       >
-        Full Leaderboard
+        View Full Leaderboard
       </Link>
     </div>
   );
@@ -733,42 +736,43 @@ function LeaderboardCard({ leaderboard, currentUserId }) {
 
 function ChallengeCard() {
   const challenges = [
-    ["task_alt", "Daily Security Quest", "+100"],
-    ["bolt", "Rapid Fire Quiz", "+250"],
-    ["account_tree", "Risk vs Reward Sim", "+500"],
+    { icon: "alternate_email", title: "Phishing Awareness", reward: "+150 ISP", tag: "Daily" },
+    { icon: "bolt",            title: "Rapid Fire Quiz",   reward: "+250 ISP", tag: "Hot" },
+    { icon: "psychology",      title: "Social Engineering", reward: "+500 ISP", tag: "Advanced" },
   ];
 
   return (
-    <div className="section-card p-6">
-      <h4 className="hg font-bold text-gray-900 text-base mb-1">Challenge Hub</h4>
+    <div className="section-card p-6 flex flex-col">
+      <div className="flex items-center justify-between mb-1">
+        <h4 className="hg font-bold text-gray-900 text-base">Challenge Hub</h4>
+        <span className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
+          5 Challenges
+        </span>
+      </div>
+      <p className="text-gray-500 text-xs mb-4">Complete challenges to earn ISP tokens and climb the rankings.</p>
 
-      <p className="text-gray-500 text-xs mb-5">
-        Complete daily tasks to maintain your streak.
-      </p>
-
-      <div className="space-y-2.5 mb-5 flex-1">
-        {challenges.map(([icon, title, reward]) => (
-          <div
-            key={title}
-            className="challenge-row flex items-center justify-between px-3 py-2.5"
-          >
+      {/* Challenge list */}
+      <div className="space-y-2 mb-4 flex-1">
+        {challenges.map((c) => (
+          <div key={c.title} className="challenge-row flex items-center justify-between px-3 py-2.5">
             <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-blue-600 text-lg">
-                {icon}
-              </span>
-              <span className="text-xs font-semibold text-gray-800">{title}</span>
+              <span className="material-symbols-outlined text-blue-600 text-lg">{c.icon}</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-800">{c.title}</p>
+                <p className="text-[10px] text-gray-400">{c.tag}</p>
+              </div>
             </div>
-
-            <span className="token-badge">{reward}</span>
+            <span className="token-badge">{c.reward}</span>
           </div>
         ))}
       </div>
 
       <Link
         href="/challenge"
-        className="mt-auto w-full py-2.5 text-sm font-bold rounded-xl text-white text-center"
-        style={{ background: "linear-gradient(135deg,#003366,#3a5f94)" }}
+        className="mt-auto w-full py-2.5 text-sm font-bold rounded-xl text-white text-center flex items-center justify-center gap-2 transition-all hover:brightness-110"
+        style={{ background: "linear-gradient(135deg,#3a0ca3,#7209b7)" }}
       >
+        <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>sports_esports</span>
         Play Now →
       </Link>
     </div>
