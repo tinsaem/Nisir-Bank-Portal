@@ -32,13 +32,19 @@ if [ ! -f .env.production ]; then
     exit 1
 fi
 
-# Generate Prisma Client
+# Run database migrations first
+echo "Running database migrations..."
+npx prisma migrate deploy
+
+# Generate Prisma Client (MUST be before build)
 echo "Generating Prisma Client..."
 npx prisma generate
 
-# Run database migrations
-echo "Running database migrations..."
-npx prisma migrate deploy
+# Verify Prisma client was generated
+if [ ! -d "src/generated/prisma" ]; then
+    echo "ERROR: Prisma client generation failed!"
+    exit 1
+fi
 
 # Build the Next.js application
 echo "Building application..."
@@ -64,7 +70,7 @@ echo "==================================="
 echo "Deployment Complete!"
 echo "==================================="
 echo ""
-echo "Application is running on http://localhost:3000"
+echo "Application is running on http://localhost:2022"
 echo ""
 echo "PM2 Commands:"
 echo "  pm2 status          - Check app status"
