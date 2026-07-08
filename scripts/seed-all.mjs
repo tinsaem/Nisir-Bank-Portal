@@ -1,9 +1,9 @@
--- =============================================================
--- Nisir Bank SETA Portal — Full Data Seed
--- Generated: 2026-07-04T19:22:51.428Z
--- Run AFTER: npx prisma db push (on the target VPS database)
--- Usage:     node scripts/seed-all.mjs
--- =============================================================
+// =============================================================
+// Nisir Bank SETA Portal — Full Data Seed
+// Generated: 2026-07-04T19:22:51.428Z
+// Run AFTER: npx prisma db push (on the target VPS database)
+// Usage:     node scripts/seed-all.mjs
+// =============================================================
 
 import "dotenv/config";
 import pg from "pg";
