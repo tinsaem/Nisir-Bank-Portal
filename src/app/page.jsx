@@ -28,15 +28,6 @@ const ANNOUNCEMENTS = [
     text: "The SETA Onboarding Module is now available on this portal. All new employees must complete it within 30 days of joining. Progress is tracked and reported to HR.",
   },
   {
-    id: 3,
-    type: "alert",
-    label: "Security Alert",
-    icon: "gpp_bad",
-    color: "rose",
-    date: "Active",
-    text: "A phishing simulation is active this month. Do not click suspicious links or share credentials via email. Report any suspicious messages to the Security Operations team.",
-  },
-  {
     id: 4,
     type: "notice",
     label: "ISP Compliance",
@@ -50,7 +41,6 @@ const ANNOUNCEMENTS = [
 const ANNOUNCE_PALETTE = {
   amber:  { badge: "border-amber-400/40 bg-amber-500/20 text-amber-300",   bar: "bg-amber-400",   dot: "bg-amber-300" },
   sky:    { badge: "border-sky-400/40 bg-sky-500/20 text-sky-300",         bar: "bg-sky-400",     dot: "bg-sky-300" },
-  rose:   { badge: "border-rose-400/40 bg-rose-500/20 text-rose-300",      bar: "bg-rose-400",    dot: "bg-rose-300" },
   violet: { badge: "border-violet-400/40 bg-violet-500/20 text-violet-300", bar: "bg-violet-400", dot: "bg-violet-300" },
 };
 

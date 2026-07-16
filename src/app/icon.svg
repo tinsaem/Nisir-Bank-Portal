@@ -1,0 +1,27 @@
+<svg viewBox="160 30 360 360" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>Nisir Bank S.C.</title>
+
+  <path d="M 340 60 A 150 150 0 0 1 490 210" fill="none" stroke="#C9A227" stroke-width="3" opacity="0.5"/>
+  <path d="M 340 60 A 150 150 0 0 0 190 210" fill="none" stroke="#C9A227" stroke-width="3" opacity="0.5"/>
+  <path d="M 190 210 A 150 150 0 0 0 340 360" fill="none" stroke="#C9A227" stroke-width="1.5" opacity="0.3"/>
+  <path d="M 490 210 A 150 150 0 0 1 340 360" fill="none" stroke="#C9A227" stroke-width="1.5" opacity="0.3"/>
+
+  <circle cx="340" cy="210" r="105" fill="#F0F7F4" stroke="#1B4332" stroke-width="2"/>
+
+  <line x1="340" y1="105" x2="340" y2="75" stroke="#C9A227" stroke-width="2.5"/>
+  <line x1="340" y1="315" x2="340" y2="345" stroke="#C9A227" stroke-width="2.5"/>
+  <line x1="235" y1="210" x2="205" y2="210" stroke="#C9A227" stroke-width="2.5"/>
+  <line x1="445" y1="210" x2="475" y2="210" stroke="#C9A227" stroke-width="2.5"/>
+
+  <polygon points="340,58 348,70 340,82 332,70" fill="#C9A227" opacity="0.9"/>
+  <polygon points="340,338 348,350 340,362 332,350" fill="#C9A227" opacity="0.9"/>
+  <polygon points="190,210 202,218 190,226 178,218" fill="#C9A227" opacity="0.9"/>
+  <polygon points="490,210 502,218 490,226 478,218" fill="#C9A227" opacity="0.9"/>
+
+  <circle cx="263" cy="133" r="4" fill="#C9A227" opacity="0.6"/>
+  <circle cx="417" cy="133" r="4" fill="#C9A227" opacity="0.6"/>
+  <circle cx="263" cy="287" r="4" fill="#C9A227" opacity="0.6"/>
+  <circle cx="417" cy="287" r="4" fill="#C9A227" opacity="0.6"/>
+
+  <text x="340" y="220" fill="#1B4332" font-family="serif" font-size="110" font-weight="700" text-anchor="middle" dominant-baseline="central">&#225;</text>
+</svg>
