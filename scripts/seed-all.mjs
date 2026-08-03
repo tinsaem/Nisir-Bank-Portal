@@ -242,26 +242,24 @@ console.log("  EmployeeAccount: 106 rows seeded.");
 // ── InternalEmail (21 rows)
 await run(`INSERT INTO "InternalEmail" ("id", "sequenceNumber", "senderName", "senderEmail", "subject", "preview", "body", "tag", "actionType", "actionLabel", "href", "approveLabel", "declineLabel", "attachmentName", "attachmentSize", "replyPrompt", "isPhishing", "phishingLevel", "phishingNotes", "sentAt", "createdAt", "updatedAt") VALUES ('email-001', 1, 'W/ro Hana Tesfaye', 'hana.tesfaye@nisirbank.com', 'Welcome to Nisir Bank S.C. — Your First Day', 'We are delighted to welcome you as a Graduate Trainee. Please reply to confirm you have received this message...', 'Dear Employee,
 
-Welcome to Nisir Bank S.C. as a Graduate Trainee. You have been given access to the SETA Portal, which you will use throughout your onboarding to receive official communications and complete your training tasks.
+Welcome to Nisir Bank S.C.''s Security Education and Training Awareness (SETA) platform.You now have access to the SETA Portal, where you can complete the training modules and review related policy documents. You''ll find these at the top of this page, or you can access them directly via this link: https://nisirbank.com.et/foundational_learning 
 
-Please treat every message in your inbox as you would a real bank communication — read carefully and take action as required.
-
-To confirm your portal access is working, please use the Reply button below to send a brief acknowledgment to HR. A simple "Received and understood" is sufficient.
+If you have any questions or run into issues accessing the portal, please don''t hesitate to reach out.
 
 Warm regards,
 W/ro Hana Tesfaye
-HR Coordinator | Nisir Bank S.C.', 'hr', 'REPLY', 'Reply to HR', NULL, NULL, NULL, NULL, NULL, 'Please reply to confirm you have received this welcome message and that your portal access is working correctly.', FALSE, NULL, NULL, '2024-11-04 07:45:00.000', '2026-06-26 13:56:16.662', '2026-06-27 21:37:20.325') ON CONFLICT ("sequenceNumber") DO NOTHING`);
+HR Coordinator | Nisir Bank S.C.', 'hr', 'REPLY', 'Reply to HR', NULL, NULL, NULL, NULL, NULL, 'Please reply to confirm you have received this welcome message and that your portal access is working correctly.', FALSE, NULL, NULL, '2024-11-04 07:45:00.000', '2026-06-26 13:56:16.662', '2026-08-03 06:16:18.403') ON CONFLICT ("sequenceNumber") DO NOTHING`);
 await run(`INSERT INTO "InternalEmail" ("id", "sequenceNumber", "senderName", "senderEmail", "subject", "preview", "body", "tag", "actionType", "actionLabel", "href", "approveLabel", "declineLabel", "attachmentName", "attachmentSize", "replyPrompt", "isPhishing", "phishingLevel", "phishingNotes", "sentAt", "createdAt", "updatedAt") VALUES ('email-002', 2, 'Ato Natnael Worku', 'natnael.worku@nisirbank.com', 'Your SETA Portal Account is Ready — Please Confirm Setup', 'Your employee account has been created. Please confirm your account setup is complete by clicking the button below...', 'Dear Employee,
 
 Your SETA Portal account is now fully active. All modules — inbox, training, compliance, finance, and HR — are accessible using your Employee ID and password provided by your session supervisor.
 
-Important security rules: your credentials must never be shared with anyone, including IT staff. You will never receive a legitimate email asking you to verify or re-activate your account through a link. Any such email is a phishing attempt — report it to itsecurity@nisirbank.com immediately.
+Important security rules: your credentials must never be shared with anyone, including IT staff. You will never receive a legitimate email asking you to verify or re-activate your account through a link. Any such email is a phishing attempt — report it to https://itsecurity@nisirbank.com immediately.
 
 Please click below to confirm your setup is complete.
 
 Best regards,
 Ato Natnael Worku
-IT Support Specialist | Nisir Bank S.C.', 'system', 'APPROVE', NULL, NULL, 'Confirm Setup Complete', 'I Have a Technical Issue', NULL, NULL, NULL, FALSE, NULL, NULL, '2024-11-04 08:00:00.000', '2026-06-26 13:56:16.678', '2026-06-27 21:37:20.385') ON CONFLICT ("sequenceNumber") DO NOTHING`);
+IT Support Specialist | Nisir Bank S.C.', 'system', 'APPROVE', NULL, NULL, 'Confirm Setup Complete', 'I Have a Technical Issue', NULL, NULL, NULL, FALSE, NULL, NULL, '2024-11-04 08:00:00.000', '2026-06-26 13:56:16.678', '2026-08-03 06:21:51.444') ON CONFLICT ("sequenceNumber") DO NOTHING`);
 await run(`INSERT INTO "InternalEmail" ("id", "sequenceNumber", "senderName", "senderEmail", "subject", "preview", "body", "tag", "actionType", "actionLabel", "href", "approveLabel", "declineLabel", "attachmentName", "attachmentSize", "replyPrompt", "isPhishing", "phishingLevel", "phishingNotes", "sentAt", "createdAt", "updatedAt") VALUES ('email-003', 3, 'W/ro Selamawit Girma', 'hr@nisirbank.com', 'Mandatory Code of Conduct Acknowledgment — Action Required', 'All new employees must formally acknowledge receipt of the Nisir Bank Code of Conduct before end of week...', 'Dear Employee,
 
 All new staff must formally acknowledge the Nisir Bank Code of Conduct before the end of their first working week. A printed copy has been included in your onboarding pack — please read it before proceeding.
@@ -484,6 +482,7 @@ Warm regards,
 W/ro Selamawit Girma
 Head of Human Resources | Nisir Bank S.C.', 'hr', 'LINK', 'Submit My Week 1 Self-Assessment', '/hr/week1-self-assessment', NULL, NULL, NULL, NULL, NULL, FALSE, NULL, NULL, '2024-11-04 13:00:00.000', '2026-06-26 13:56:16.711', '2026-06-27 21:37:20.450') ON CONFLICT ("sequenceNumber") DO NOTHING`);
 console.log("  InternalEmail: 21 rows seeded.");
+
 
 // ── EmployeeEmail (21 rows)
 await run(`INSERT INTO "EmployeeEmail" ("id", "employeeId", "emailId", "isRead", "isArchived", "actionStatus", "actionText", "actionAt", "openedAt", "dv1ClickedAt", "dv2SubmittedAt", "createdAt", "updatedAt") VALUES ('cmqws1cvq0000k4i6ojg4kqbc', 'EMP-001', 'email-001', TRUE, TRUE, 'NONE', NULL, NULL, '2026-06-27 18:11:06.997', NULL, NULL, '2026-06-27 16:52:41.078', '2026-06-28 13:36:29.475') ON CONFLICT ("employeeId","emailId") DO NOTHING`);

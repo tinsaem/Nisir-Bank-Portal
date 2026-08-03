@@ -1022,7 +1022,13 @@ function InlineAction({ email, onTakeLinkAction }) {
 
   if (email.href && !isDone) {
     return (
-      <Link href={email.href} onClick={onTakeLinkAction} className={className}>
+      <Link
+        href={email.href}
+        onClick={onTakeLinkAction}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
         {label}
       </Link>
     );
