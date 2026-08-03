@@ -11,7 +11,10 @@ const VALID_ACTION_STATUSES = new Set([
   "DOWNLOADED",
   "VERIFYING",
   "VERIFIED",
+  "FORWARDED",
 ]);
+
+const FREE_TEXT_STATUSES = new Set(["REPLIED", "FORWARDED"]);
 
 export async function PATCH(req, { params }) {
   const session = await getSessionFromRequest(req);
@@ -50,9 +53,9 @@ export async function PATCH(req, { params }) {
     }
     data.actionStatus = status;
     data.actionAt = new Date();
-    // Only "REPLIED" carries free-text content; other actions never persist
+    // Only reply/forward carry free-text content; other actions never persist
     // anything the employee typed (e.g. the credential-form fields).
-    data.actionText = status === "REPLIED" ? String(body.action.text ?? "").slice(0, 2000) : null;
+    data.actionText = FREE_TEXT_STATUSES.has(status) ? String(body.action.text ?? "").slice(0, 2000) : null;
   }
 
   // Research DVs: recorded independently of the UI-facing actionStatus so click

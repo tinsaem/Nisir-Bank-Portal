@@ -249,7 +249,7 @@ export default function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8 space-y-8">
         <div className="section-card p-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="hg text-lg font-bold text-gray-900">Reset Experiment</h2>
@@ -283,15 +283,26 @@ export default function AdminDashboardPage() {
           </div>
 
           {formOpen && (
-            <TemplateForm
-              form={form}
-              setForm={setForm}
-              error={formError}
-              saving={saving}
-              isEditing={Boolean(editingId)}
-              onSubmit={submitForm}
-              onCancel={() => setFormOpen(false)}
-            />
+            <div
+              className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto"
+              style={{ background: "rgba(15,23,42,0.55)", backdropFilter: "blur(3px)" }}
+              onClick={() => setFormOpen(false)}
+            >
+              <div
+                className="w-full max-w-[1100px] my-6 sm:my-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <TemplateForm
+                  form={form}
+                  setForm={setForm}
+                  error={formError}
+                  saving={saving}
+                  isEditing={Boolean(editingId)}
+                  onSubmit={submitForm}
+                  onCancel={() => setFormOpen(false)}
+                />
+              </div>
+            </div>
           )}
 
           <div className="overflow-x-auto mt-5">
@@ -457,19 +468,31 @@ function ContextBadge({ level }) {
   );
 }
 
+const FULL_WIDTH_STYLE = {
+  display: "block",
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: "100%",
+  boxSizing: "border-box",
+};
+
 function TemplateForm({ form, setForm, error, saving, isEditing, onSubmit, onCancel }) {
   function update(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
   return (
-    <form onSubmit={onSubmit} className="bg-gray-50 border border-gray-100 rounded-xl p-5 mb-5 space-y-3">
+    <form
+      onSubmit={onSubmit}
+      className="bg-white border border-gray-100 rounded-2xl p-6 shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto"
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="Sender Name">
           <input
             value={form.senderName}
             onChange={(e) => update("senderName", e.target.value)}
             className="form-input"
+            style={FULL_WIDTH_STYLE}
           />
         </Field>
         <Field label="Sender Email">
@@ -477,30 +500,55 @@ function TemplateForm({ form, setForm, error, saving, isEditing, onSubmit, onCan
             value={form.senderEmail}
             onChange={(e) => update("senderEmail", e.target.value)}
             className="form-input"
+            style={FULL_WIDTH_STYLE}
           />
         </Field>
       </div>
 
       <Field label="Subject">
-        <input value={form.subject} onChange={(e) => update("subject", e.target.value)} className="form-input" />
+        <input
+          value={form.subject}
+          onChange={(e) => update("subject", e.target.value)}
+          className="form-input"
+          style={FULL_WIDTH_STYLE}
+        />
       </Field>
 
-      <Field label="Preview (shown in the inbox list)">
-        <input value={form.preview} onChange={(e) => update("preview", e.target.value)} className="form-input" />
-      </Field>
+      <div style={{ display: "block", width: "80%" }}>
+        <Field label="Preview (shown in the inbox list)">
+          <input
+            value={form.preview}
+            onChange={(e) => update("preview", e.target.value)}
+            className="form-input"
+            style={FULL_WIDTH_STYLE}
+          />
+        </Field>
+      </div>
 
       <Field label="Body">
         <textarea
           value={form.body}
           onChange={(e) => update("body", e.target.value)}
-          rows={5}
-          className="form-input"
+          rows={18}
+          className="form-input resize-y font-mono"
+          style={{ ...FULL_WIDTH_STYLE, minHeight: 380, lineHeight: 1.6 }}
         />
+        <p className="text-[11px] text-gray-400 mt-1 leading-snug">
+          Plain URLs (https://…) pasted here become clickable automatically. For a tracked
+          action link instead, set Action Type to &quot;link&quot;, type <code>%%LINK%%</code>{" "}
+          where the link should appear, then fill in Action Label (the clickable text) and
+          Link href (the destination) below.
+        </p>
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="Tag">
-          <input value={form.tag} onChange={(e) => update("tag", e.target.value)} className="form-input" />
+          <input
+            value={form.tag}
+            onChange={(e) => update("tag", e.target.value)}
+            className="form-input"
+            style={FULL_WIDTH_STYLE}
+          />
         </Field>
 
         <Field label="Action Type">
@@ -508,6 +556,7 @@ function TemplateForm({ form, setForm, error, saving, isEditing, onSubmit, onCan
             value={form.actionType}
             onChange={(e) => update("actionType", e.target.value)}
             className="form-input"
+            style={FULL_WIDTH_STYLE}
           >
             {ACTION_TYPES.map((type) => (
               <option key={type} value={type}>
@@ -524,10 +573,16 @@ function TemplateForm({ form, setForm, error, saving, isEditing, onSubmit, onCan
             value={form.actionLabel}
             onChange={(e) => update("actionLabel", e.target.value)}
             className="form-input"
+            style={FULL_WIDTH_STYLE}
           />
         </Field>
         <Field label="Link href (link type only)">
-          <input value={form.href} onChange={(e) => update("href", e.target.value)} className="form-input" />
+          <input
+            value={form.href}
+            onChange={(e) => update("href", e.target.value)}
+            className="form-input"
+            style={FULL_WIDTH_STYLE}
+          />
         </Field>
       </div>
 
@@ -537,6 +592,7 @@ function TemplateForm({ form, setForm, error, saving, isEditing, onSubmit, onCan
             value={form.approveLabel}
             onChange={(e) => update("approveLabel", e.target.value)}
             className="form-input"
+            style={FULL_WIDTH_STYLE}
           />
         </Field>
         <Field label="Decline Label (approve type)">
@@ -544,6 +600,7 @@ function TemplateForm({ form, setForm, error, saving, isEditing, onSubmit, onCan
             value={form.declineLabel}
             onChange={(e) => update("declineLabel", e.target.value)}
             className="form-input"
+            style={FULL_WIDTH_STYLE}
           />
         </Field>
       </div>
@@ -554,6 +611,7 @@ function TemplateForm({ form, setForm, error, saving, isEditing, onSubmit, onCan
             value={form.attachmentName}
             onChange={(e) => update("attachmentName", e.target.value)}
             className="form-input"
+            style={FULL_WIDTH_STYLE}
           />
         </Field>
         <Field label="Attachment Size (attachment type)">
@@ -561,6 +619,7 @@ function TemplateForm({ form, setForm, error, saving, isEditing, onSubmit, onCan
             value={form.attachmentSize}
             onChange={(e) => update("attachmentSize", e.target.value)}
             className="form-input"
+            style={FULL_WIDTH_STYLE}
           />
         </Field>
       </div>

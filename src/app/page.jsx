@@ -531,7 +531,7 @@ function SignInForm({ login, setLogin, showPwd, setShowPwd, loginErr, loginLoad,
         <input
           id="employee-id"
           type="text"
-          placeholder="e.g. E-10234"
+          placeholder="e.g. EMP-001"
           className="inp"
           value={login.employeeId}
           onChange={(e) => setLogin({ ...login, employeeId: e.target.value })}

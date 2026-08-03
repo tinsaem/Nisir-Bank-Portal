@@ -63,6 +63,7 @@ enum EmailActionStatus {
   DOWNLOADED
   VERIFYING
   VERIFIED
+  FORWARDED
 }
 
 // Content/template for a SETA phishing-awareness inbox message. Shared across

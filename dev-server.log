@@ -1,0 +1,139 @@
+
+> nisir-bank-portal@0.1.0 dev
+> next dev --webpack
+
+▲ Next.js 16.2.9 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.65.1:3000
+- Environments: .env
+✓ Ready in 1936ms
+
+[browser] ./src/generated/prisma/client.ts:20:1
+Module not found: Can't resolve './internal/class.ts'
+  18 | import * as runtime from "@prisma/client/runtime/client"
+  19 | import * as $Enums from "./enums.ts"
+> 20 | import * as $Class from "./internal/class.ts"
+     | ^
+  21 | import * as Prisma from "./internal/prismaNamespace.ts"
+  22 |
+  23 | export * as $Enums from './enums.ts'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/lib/prisma.js
+./src/app/api/admin/results/route.js 
+[browser] ./src/generated/prisma/client.ts:21:1
+Module not found: Can't resolve './internal/prismaNamespace.ts'
+  19 | import * as $Enums from "./enums.ts"
+  20 | import * as $Class from "./internal/class.ts"
+> 21 | import * as Prisma from "./internal/prismaNamespace.ts"
+     | ^
+  22 |
+  23 | export * as $Enums from './enums.ts'
+  24 | export * from "./enums.ts"
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/lib/prisma.js
+./src/app/api/admin/results/route.js 
+[browser] ./src/generated/prisma/client.ts:20:1
+Module not found: Can't resolve './internal/class.ts'
+  18 | import * as runtime from "@prisma/client/runtime/client"
+  19 | import * as $Enums from "./enums.ts"
+> 20 | import * as $Class from "./internal/class.ts"
+     | ^
+  21 | import * as Prisma from "./internal/prismaNamespace.ts"
+  22 |
+  23 | export * as $Enums from './enums.ts'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/lib/prisma.js
+./src/app/api/admin/results/route.js 
+[browser] ./src/generated/prisma/client.ts:21:1
+Module not found: Can't resolve './internal/prismaNamespace.ts'
+  19 | import * as $Enums from "./enums.ts"
+  20 | import * as $Class from "./internal/class.ts"
+> 21 | import * as Prisma from "./internal/prismaNamespace.ts"
+     | ^
+  22 |
+  23 | export * as $Enums from './enums.ts'
+  24 | export * from "./enums.ts"
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/lib/prisma.js
+./src/app/api/admin/results/route.js 
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+○ Compiling proxy ...
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET / 200 in 5.8s (next.js: 4.8s, application-code: 1019ms)
+○ Compiling /admin_dashboard ...
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /admin_dashboard 200 in 533ms (next.js: 14ms, proxy.ts: 444ms, application-code: 74ms)
+ GET /admin_dashboard 200 in 120ms (next.js: 9ms, proxy.ts: 17ms, application-code: 94ms)
+ GET / 200 in 262ms (next.js: 113ms, application-code: 148ms)
+○ Compiling /api/admin/results ...
+ GET /api/admin/internal-email 200 in 5.4s (next.js: 4.7s, application-code: 663ms)
+ GET /api/admin/results 200 in 5.4s (next.js: 4.7s, application-code: 710ms)
+ GET /api/admin/results 401 in 158ms (next.js: 45ms, application-code: 114ms)
+ GET / 200 in 1908ms (next.js: 765ms, application-code: 1143ms)
+○ Compiling /internal_email ...
+ GET /internal_email 200 in 12.9s (next.js: 12.1s, proxy.ts: 149ms, application-code: 584ms)
+ GET /admin_dashboard 200 in 12.9s (next.js: 12.1s, proxy.ts: 153ms, application-code: 590ms)
+ POST /api/admin/reset 200 in 8.7s (next.js: 8.2s, application-code: 538ms)
+ GET / 200 in 302ms (next.js: 124ms, application-code: 178ms)
+○ Compiling /api/admin/results ...
+ GET /api/admin/internal-email 200 in 3.5s (next.js: 2.9s, application-code: 579ms)
+ GET /api/documents?categories=policy 200 in 4.8s (next.js: 4.2s, application-code: 583ms)
+ GET /api/admin/results 200 in 3.6s (next.js: 2.9s, application-code: 740ms)
+ GET /api/internal-email 200 in 5.0s (next.js: 4.1s, application-code: 845ms)
+ GET /api/internal-email 200 in 53ms (next.js: 7ms, application-code: 46ms)
+ GET /api/internal-email 200 in 51ms (next.js: 7ms, application-code: 44ms)
+ PATCH /api/internal-email/cmsd3e6lb0002qci6yut39ylj 200 in 6.0s (next.js: 5.8s, application-code: 186ms)
+ PATCH /api/internal-email/cmsd3e6lb0002qci6yut39ylj 200 in 345ms (next.js: 102ms, application-code: 243ms)
+ PATCH /api/internal-email/cmsd3e6lb0003qci6n3r4a2xa 200 in 53ms (next.js: 13ms, application-code: 41ms)
+ PATCH /api/internal-email/cmsd3e6la0000qci65xlvu27z 200 in 92ms (next.js: 53ms, application-code: 39ms)
+ PATCH /api/internal-email/cmsd3e6lb0001qci6v3qfnibu 200 in 125ms (next.js: 51ms, application-code: 74ms)
+ PATCH /api/internal-email/cmsd3e6lb0004qci60od92mqi 200 in 86ms (next.js: 44ms, application-code: 42ms)
+ PATCH /api/internal-email/cmsd3e6lb0005qci680hjbd1q 200 in 97ms (next.js: 48ms, application-code: 50ms)
+ PATCH /api/internal-email/cmsd3e6lb0006qci6fbwnlfwa 200 in 72ms (next.js: 33ms, application-code: 38ms)
+ PATCH /api/internal-email/cmsd3e6lb0007qci6rtmd4y4q 200 in 53ms (next.js: 12ms, application-code: 41ms)
+ PATCH /api/internal-email/cmsd3e6lb0008qci6opmdu6pj 200 in 96ms (next.js: 46ms, application-code: 50ms)
+ PATCH /api/internal-email/cmsd3e6lc0009qci6lhsk7ktr 200 in 119ms (next.js: 45ms, application-code: 74ms)
+ PATCH /api/internal-email/cmsd3e6lc000jqci6xrglmvm7 200 in 77ms (next.js: 43ms, application-code: 33ms)
+ PATCH /api/internal-email/cmsd3e6lc000aqci686pt5mi5 200 in 63ms (next.js: 18ms, application-code: 45ms)
+ PATCH /api/internal-email/cmsd3e6lc000bqci6yc8v9eok 200 in 41ms (next.js: 10ms, application-code: 32ms)
+ PATCH /api/internal-email/cmsd3e6lc000cqci67ejkryet 200 in 214ms (next.js: 40ms, application-code: 174ms)
+ PATCH /api/internal-email/cmsd3e6lc000dqci6olqkfgtx 200 in 67ms (next.js: 31ms, application-code: 36ms)
+ PATCH /api/internal-email/cmsd3e6lc000eqci6yu9oy6sf 200 in 90ms (next.js: 41ms, application-code: 49ms)
+ PATCH /api/internal-email/cmsd3e6lc000kqci62wpqy607 200 in 74ms (next.js: 35ms, application-code: 38ms)
+ PATCH /api/internal-email/cmsd3e6lc000fqci6a82jyysw 200 in 55ms (next.js: 28ms, application-code: 27ms)
+ PATCH /api/internal-email/cmsd3e6lc000gqci6fu4d6nqd 200 in 45ms (next.js: 7ms, application-code: 38ms)
+ PATCH /api/internal-email/cmsd3e6lc000hqci6h5w9btdo 200 in 101ms (next.js: 39ms, application-code: 62ms)
+ PATCH /api/internal-email/cmsd3e6lc000iqci6ldq6y54t 200 in 153ms (next.js: 42ms, application-code: 112ms)
+○ Compiling /employee_dashboard ...
+ GET /employee_dashboard 200 in 10.8s (next.js: 9.8s, proxy.ts: 333ms, application-code: 603ms)
+ GET /api/internal-email 200 in 2.8s (next.js: 2.2s, application-code: 619ms)
+ GET /api/internal-email 200 in 66ms (next.js: 27ms, application-code: 39ms)
+ GET /api/internal-email 200 in 52ms (next.js: 8ms, application-code: 44ms)
+ GET /internal_email 200 in 313ms (next.js: 191ms, proxy.ts: 20ms, application-code: 102ms)
+ GET /api/internal-email 200 in 115ms (next.js: 8ms, application-code: 107ms)
+○ Compiling /api/documents ...
+ GET /api/documents?categories=policy 200 in 3.7s (next.js: 3.6s, application-code: 96ms)
+ GET /api/internal-email 200 in 3.6s (next.js: 3.5s, application-code: 156ms)
+ GET /api/internal-email 200 in 37ms (next.js: 6ms, application-code: 31ms)
+ GET / 200 in 3.3s (next.js: 2.1s, application-code: 1287ms)
+ GET /internal_email 200 in 514ms (next.js: 308ms, proxy.ts: 88ms, application-code: 119ms)
+ GET /internal_email 200 in 3.6s (next.js: 234ms, proxy.ts: 2.5s, application-code: 810ms)
+ GET /admin_dashboard 200 in 612ms (next.js: 162ms, proxy.ts: 85ms, application-code: 365ms)
+ GET /internal_email 200 in 260ms (next.js: 23ms, proxy.ts: 44ms, application-code: 193ms)

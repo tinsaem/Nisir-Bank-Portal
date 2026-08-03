@@ -22,6 +22,7 @@ const ACTED_STATUSES = new Set([
   "declined",
   "downloaded",
   "verified",
+  "forwarded",
 ]);
 
 function getInitials(name) {
@@ -63,6 +64,17 @@ export default function InternalEmailPage() {
   const [policyDocs, setPolicyDocs] = useState([]);
   const [policyOpen, setPolicyOpen] = useState(false);
 
+  // Reply state
+  const [replyOpen,       setReplyOpen]       = useState(false);
+  const [replyText,       setReplyText]       = useState("");
+  const [replySubmitting, setReplySubmitting] = useState(false);
+
+  // Forward state
+  const [forwardOpen,       setForwardOpen]       = useState(false);
+  const [forwardTo,         setForwardTo]         = useState("");
+  const [forwardNote,       setForwardNote]       = useState("");
+  const [forwardSubmitting, setForwardSubmitting] = useState(false);
+
   // Quiz state
   const [quizOpen,       setQuizOpen]       = useState(false);
   const [quizQuestions,  setQuizQuestions]  = useState([]);
@@ -94,7 +106,6 @@ export default function InternalEmailPage() {
       .then((data) => {
         if (cancelled || !data.success) return;
         setEmails(data.emails);
-        if (data.emails.length > 0) setSelectedId(data.emails[0].id);
       });
 
     fetch("/api/documents?categories=policy")
@@ -170,29 +181,54 @@ export default function InternalEmailPage() {
 
   const visibleEmails = emails.filter((email) => !email.isArchived);
   const unreadCount = visibleEmails.filter((email) => !email.isRead).length;
-  const selectedEmail = visibleEmails.find((email) => email.id === selectedId) || visibleEmails[0];
+  const selectedEmail = selectedId ? visibleEmails.find((email) => email.id === selectedId) : null;
 
   function patchLocal(id, fields) {
     setEmails((prev) => prev.map((email) => (email.id === id ? { ...email, ...fields } : email)));
   }
 
   function openEmail(id) {
-    setSelectedId(id);
-    const email = emails.find((e) => e.id === id);
-    if (email && !email.isRead) {
-      patchLocal(id, { isRead: true });
-      patchEmail(id, { read: true }).catch(() => {});
+    if (selectedId && selectedId !== id) {
+      const previous = emails.find((e) => e.id === selectedId);
+      if (previous && !previous.isRead) {
+        patchLocal(selectedId, { isRead: true });
+        patchEmail(selectedId, { read: true }).catch(() => {});
+      }
     }
+    setSelectedId(id);
   }
 
-  async function sendReply() {
+  function openReplyModal() {
     if (!selectedEmail || selectedEmail.actionStatus === "replied") return;
-    patchLocal(selectedEmail.id, { actionStatus: "replied", actionAt: new Date().toISOString() });
+    setReplyText("");
+    setReplyOpen(true);
+  }
+
+  function closeReplyModal() {
+    if (replySubmitting) return;
+    setReplyOpen(false);
+    setReplyText("");
+  }
+
+  async function submitReply(e) {
+    e.preventDefault();
+    if (!selectedEmail || replySubmitting || !replyText.trim()) return;
+    setReplySubmitting(true);
+    const id = selectedEmail.id;
+    const text = replyText.trim();
+    patchLocal(id, { actionStatus: "replied", actionAt: new Date().toISOString() });
     try {
-      await patchEmail(selectedEmail.id, { action: { status: "replied", text: "" } });
+      await patchEmail(id, { action: { status: "replied", text } });
     } catch {
       // best-effort sync
     }
+    setReplySubmitting(false);
+    setReplyOpen(false);
+    setReplyText("");
+  }
+
+  function handleUnavailableClick() {
+    alert("Not available this time.");
   }
 
   function takeLinkAction() {
@@ -202,17 +238,32 @@ export default function InternalEmailPage() {
     patchEmail(id, { action: { status: "done" }, dv1: true }).catch(() => {});
   }
 
-  async function archiveEmail() {
-    if (!selectedEmail) return;
+  function openForwardModal() {
+    if (!selectedEmail || selectedEmail.actionStatus === "forwarded") return;
+    setForwardTo("it-security@nisirbank.com");
+    setForwardNote("");
+    setForwardOpen(true);
+  }
+
+  function closeForwardModal() {
+    if (forwardSubmitting) return;
+    setForwardOpen(false);
+  }
+
+  async function submitForward(e) {
+    e.preventDefault();
+    if (!selectedEmail || forwardSubmitting || !forwardTo.trim()) return;
+    setForwardSubmitting(true);
     const id = selectedEmail.id;
-    patchLocal(id, { isArchived: true });
-    const next = visibleEmails.find((email) => email.id !== id);
-    if (next) openEmail(next.id);
+    const text = `Forwarded to: ${forwardTo.trim()}${forwardNote.trim() ? `\nNote: ${forwardNote.trim()}` : ""}`;
+    patchLocal(id, { actionStatus: "forwarded", actionAt: new Date().toISOString() });
     try {
-      await patchEmail(id, { archived: true });
+      await patchEmail(id, { action: { status: "forwarded", text } });
     } catch {
       // best-effort sync
     }
+    setForwardSubmitting(false);
+    setForwardOpen(false);
   }
 
   const tagStyle = selectedEmail ? TAG_STYLES[selectedEmail.tag] : null;
@@ -298,6 +349,15 @@ export default function InternalEmailPage() {
 
         .toolbar-btn:hover {
           background: #e5e7eb;
+        }
+
+        .toolbar-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .toolbar-btn:disabled:hover {
+          background: #f3f4f6;
         }
 
         .material-symbols-outlined {
@@ -510,6 +570,32 @@ export default function InternalEmailPage() {
           </div>
 
           <div className="p-6 sm:p-8">
+            {!selectedEmail && visibleEmails.length > 0 && (
+              <div className="flex flex-col items-center justify-center text-center py-14 px-4">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+                  <span className="material-symbols-outlined text-3xl text-blue-600">mark_email_unread</span>
+                </div>
+                <h2 className="hg text-xl font-bold text-gray-900 mb-2">
+                  You have {visibleEmails.length} email{visibleEmails.length !== 1 ? "s" : ""} to review
+                </h2>
+                <p className="text-sm text-gray-500 max-w-md leading-relaxed">
+                  This inbox checks how well you recognize and handle everyday internal communications, and
+                  measures your performance in doing so. Treat every message as you would if you were really
+                  an employee of Nisir Bank S.C. — read each one carefully, and reply, click, approve, or
+                  decline only as our Information Security Policies would direct.
+                </p>
+                <p lang="am" className="text-sm text-gray-500 max-w-md leading-relaxed mt-3">
+                  ይህ የገቢ መልእክት ሳጥን የዕለት ተዕለት ውስጣዊ ግንኙነቶችን ምን ያህል እንደሚያውቁ እና እንደሚይዙ ይፈትሻል፣ እና ይህን
+                  በማድረግዎ አፈጻጸምዎን ይለካል። የኒሲር ባንክ ኤስ.ሲ. ሰራተኛ ቢሆኑ ኖሮ እያንዳንዱን መልእክት እንደፈለጉት ይያዙት -
+                  እያንዳንዱን መልእክት በጥንቃቄ ያንብቡ፣ እና የመረጃ ደህንነት መመሪያዎቻችን እንደሚመሩት ብቻ ምላሽ ይስጡ፣ ጠቅ ያድርጉ፣
+                  ያጽድቁ ወይም ውድቅ ያድርጉ።
+                </p>
+                <p className="text-xs text-gray-400 mt-4">
+                  Select a message from the list on the left to begin.
+                </p>
+              </div>
+            )}
+
             {selectedEmail && (
               <>
                 <div className="flex items-center justify-between gap-3 mb-5">
@@ -544,20 +630,34 @@ export default function InternalEmailPage() {
                     <button
                       type="button"
                       className="toolbar-btn"
-                      onClick={sendReply}
+                      disabled={selectedEmail.actionStatus === "replied"}
+                      onClick={openReplyModal}
                     >
                       <span className="material-symbols-outlined text-base">reply</span>
                       {selectedEmail.actionStatus === "replied" ? "Replied ✓" : "Reply"}
                     </button>
-                    <button type="button" className="toolbar-btn" onClick={() => {}}>
+                    <button
+                      type="button"
+                      className="toolbar-btn"
+                      disabled={selectedEmail.actionStatus === "forwarded"}
+                      onClick={openForwardModal}
+                    >
                       <span className="material-symbols-outlined text-base">forward</span>
-                      Forward
+                      {selectedEmail.actionStatus === "forwarded" ? "Forwarded ✓" : "Forward"}
                     </button>
-                    <button type="button" className="toolbar-btn" onClick={archiveEmail}>
+                    <button
+                      type="button"
+                      className="toolbar-btn opacity-50 cursor-not-allowed"
+                      onClick={handleUnavailableClick}
+                    >
                       <span className="material-symbols-outlined text-base">archive</span>
                       Archive
                     </button>
-                    <button type="button" className="toolbar-btn" onClick={archiveEmail}>
+                    <button
+                      type="button"
+                      className="toolbar-btn opacity-50 cursor-not-allowed"
+                      onClick={handleUnavailableClick}
+                    >
                       <span className="material-symbols-outlined text-base">delete</span>
                       Delete
                     </button>
@@ -565,7 +665,7 @@ export default function InternalEmailPage() {
                 </div>
 
                 <div
-                  className={`rounded-xl p-4 mb-6 border-l-4 ${
+                  className={`relative overflow-hidden rounded-xl p-4 mb-6 border-l-4 ${
                     !selectedEmail.isRead
                       ? "bg-blue-50/50 border-blue-400"
                       : ACTED_STATUSES.has(selectedEmail.actionStatus)
@@ -573,14 +673,25 @@ export default function InternalEmailPage() {
                         : "bg-gray-50 border-gray-200"
                   }`}
                 >
+                  {selectedEmail.isRead && (
+                    <div className="pointer-events-none select-none absolute inset-0 flex items-center justify-center z-0">
+                      <span
+                        className="text-emerald-900/10 font-black uppercase tracking-widest whitespace-nowrap"
+                        style={{ fontSize: "2.75rem", transform: "rotate(-22deg)" }}
+                      >
+                        Already Read
+                      </span>
+                    </div>
+                  )}
+
                   {!selectedEmail.isRead && (
-                    <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wide mb-2">
+                    <p className="relative z-10 text-[11px] font-bold text-blue-600 uppercase tracking-wide mb-2">
                       New message
                     </p>
                   )}
 
                   <p
-                    className={`text-sm leading-relaxed whitespace-pre-line ${
+                    className={`relative z-10 text-sm leading-relaxed whitespace-pre-line ${
                       !selectedEmail.isRead ? "text-gray-900 font-medium" : "text-gray-500"
                     }`}
                   >
@@ -593,6 +704,144 @@ export default function InternalEmailPage() {
           </div>
         </div>
       </section>
+
+      {/* ── Reply Modal ── */}
+      {replyOpen && selectedEmail && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,15,40,0.55)", backdropFilter: "blur(3px)" }}
+          onClick={closeReplyModal}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100">
+              <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Reply to</p>
+                <p className="text-sm font-bold text-gray-900">{selectedEmail.sender}</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeReplyModal}
+                className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={submitReply} className="p-6">
+              <p className="text-xs text-gray-500 mb-3">
+                Re: <span className="font-semibold text-gray-700">{selectedEmail.subject}</span>
+              </p>
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                rows={6}
+                autoFocus
+                placeholder="Write your reply…"
+                style={{ display: "block", width: "100%", maxWidth: "100%", minWidth: "100%", boxSizing: "border-box" }}
+                className="rounded-xl border border-gray-200 px-3.5 py-3 text-sm leading-relaxed resize-y focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              />
+
+              <div className="flex items-center gap-2 mt-4">
+                <button
+                  type="submit"
+                  disabled={replySubmitting || !replyText.trim()}
+                  className="bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 rounded-xl"
+                >
+                  {replySubmitting ? "Sending…" : "Send Reply"}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeReplyModal}
+                  className="text-gray-500 hover:text-gray-700 text-sm font-bold px-4 py-2.5"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Forward Modal ── */}
+      {forwardOpen && selectedEmail && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,15,40,0.55)", backdropFilter: "blur(3px)" }}
+          onClick={closeForwardModal}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100">
+              <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Forward</p>
+                <p className="text-sm font-bold text-gray-900 truncate max-w-xs">{selectedEmail.subject}</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeForwardModal}
+                className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={submitForward} className="p-6 space-y-3">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                  Forward to
+                </label>
+                <input
+                  value={forwardTo}
+                  onChange={(e) => setForwardTo(e.target.value)}
+                  autoFocus
+                  placeholder="name@nisirbank.com"
+                  style={{ display: "block", width: "100%", maxWidth: "100%", minWidth: "100%", boxSizing: "border-box" }}
+                  className="rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Suspect this message? Forward it to IT Security for review rather than clicking anything in it.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                  Note (optional)
+                </label>
+                <textarea
+                  value={forwardNote}
+                  onChange={(e) => setForwardNote(e.target.value)}
+                  rows={4}
+                  placeholder="Add a note for the recipient…"
+                  style={{ display: "block", width: "100%", maxWidth: "100%", minWidth: "100%", boxSizing: "border-box" }}
+                  className="rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm leading-relaxed resize-y focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={forwardSubmitting || !forwardTo.trim()}
+                  className="bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 rounded-xl"
+                >
+                  {forwardSubmitting ? "Forwarding…" : "Forward"}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeForwardModal}
+                  className="text-gray-500 hover:text-gray-700 text-sm font-bold px-4 py-2.5"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── ISP Self-Check Quiz Modal ── */}
       {quizOpen && (
@@ -786,16 +1035,36 @@ function InlineAction({ email, onTakeLinkAction }) {
   );
 }
 
+const URL_REGEX = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/g;
+
+function linkifyText(text, keyPrefix) {
+  return text.split(URL_REGEX).map((part, i) => {
+    if (i % 2 === 0) return part;
+    const href = part.startsWith("www.") ? `https://${part}` : part;
+    return (
+      <a
+        key={`${keyPrefix}-${i}`}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-semibold text-blue-700 underline decoration-[1.5px] hover:text-blue-800"
+      >
+        {part}
+      </a>
+    );
+  });
+}
+
 function renderBody(email, onTakeLinkAction) {
   if (email.actionType !== "link" || !email.body.includes("%%LINK%%")) {
-    return email.body;
+    return linkifyText(email.body, "body");
   }
   const [before, after] = email.body.split("%%LINK%%");
   return (
     <>
-      {before}
+      {linkifyText(before, "before")}
       <InlineAction email={email} onTakeLinkAction={onTakeLinkAction} />
-      {after}
+      {linkifyText(after, "after")}
     </>
   );
 }
