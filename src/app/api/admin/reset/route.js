@@ -15,5 +15,9 @@ export async function POST(req) {
   // the next time each employee opens their inbox it lazy-reseeds from scratch.
   const { count } = await prisma.employeeEmail.deleteMany({});
 
-  return NextResponse.json({ success: true, deletedCount: count });
+  // Also wipes every employee's ISP self-check quiz attempts so the quiz
+  // restarts fresh. Question/choice content is untouched.
+  const { count: attemptCount } = await prisma.policyAttempt.deleteMany({});
+
+  return NextResponse.json({ success: true, deletedCount: count, deletedAttemptCount: attemptCount });
 }

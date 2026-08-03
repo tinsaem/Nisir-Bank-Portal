@@ -154,7 +154,7 @@ export default function AdminDashboardPage() {
   async function resetExperiment() {
     if (
       !window.confirm(
-        "Reset the experiment? This wipes every employee's read/reply/click progress on all emails."
+        "Reset the experiment? This wipes every employee's read/reply/click progress on all emails, plus their ISP self-check quiz attempts."
       )
     )
       return;
@@ -162,7 +162,9 @@ export default function AdminDashboardPage() {
     const res = await fetch("/api/admin/reset", { method: "POST" });
     const data = await res.json();
     if (data.success) {
-      setResetMessage(`Reset complete — cleared ${data.deletedCount} delivery records.`);
+      setResetMessage(
+        `Reset complete — cleared ${data.deletedCount} delivery records and ${data.deletedAttemptCount} self-check attempts.`
+      );
       refetchAll();
     }
   }
@@ -201,50 +203,65 @@ export default function AdminDashboardPage() {
         <div className="hero-orb w-80 h-80 bg-blue-400" style={{ top: "-60px", right: "-40px" }} />
         <div className="hero-orb w-56 h-56 bg-indigo-300" style={{ bottom: "-40px", left: "10%" }} />
 
-        <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <p className="text-blue-300 text-xs font-semibold tracking-widest uppercase mb-1">
-              SETA Program Administration
-            </p>
-            <h1 className="hg text-white text-3xl sm:text-4xl font-bold leading-tight">
-              Experiment Control Center
-            </h1>
-            <p className="text-blue-200 text-sm mt-2">
-              Manage the internal-mail awareness simulation and review employee results.
-            </p>
-            <div className="flex flex-wrap gap-4 mt-3">
-              <Link
-                href="/admin/research"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-200 hover:text-white"
-              >
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-wrap gap-3 mb-6">
+            <Link
+              href="/admin/research"
+              className="group inline-flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              <span className="w-7 h-7 rounded-lg bg-blue-400/25 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-base">analytics</span>
-                Open Research Dashboard
-                <span className="material-symbols-outlined text-base">arrow_forward</span>
-              </Link>
-              <Link
-                href="/admin/documents"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-200 hover:text-white"
-              >
+              </span>
+              Open Research Dashboard
+              <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-0.5">
+                arrow_forward
+              </span>
+            </Link>
+            <Link
+              href="/admin/documents"
+              className="group inline-flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              <span className="w-7 h-7 rounded-lg bg-amber-400/25 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-base">folder_open</span>
-                Manage Documents
-                <span className="material-symbols-outlined text-base">arrow_forward</span>
-              </Link>
-              <Link
-                href="/admin/policy-check"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-200 hover:text-white"
-              >
+              </span>
+              Manage Documents
+              <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-0.5">
+                arrow_forward
+              </span>
+            </Link>
+            <Link
+              href="/admin/policy-check"
+              className="group inline-flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white text-xs font-bold transition-all hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              <span className="w-7 h-7 rounded-lg bg-emerald-400/25 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-base">quiz</span>
-                ISP Self-Check Questions
-                <span className="material-symbols-outlined text-base">arrow_forward</span>
-              </Link>
-            </div>
+              </span>
+              ISP Self-Check Questions
+              <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-0.5">
+                arrow_forward
+              </span>
+            </Link>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <HeroStat value={results.length} label="Employees Enrolled" />
-            <HeroStat value={templates.length} label="Total Emails" />
-            <HeroStat value={totalPhishing} label="Phishing Emails" yellow />
-            <HeroStat value={compromisedCount} label="Employees Compromised" yellow />
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+            <div>
+              <p className="text-blue-300 text-xs font-semibold tracking-widest uppercase mb-1">
+                SETA Program Administration
+              </p>
+              <h1 className="hg text-white text-3xl sm:text-4xl font-bold leading-tight">
+                Experiment Control Center
+              </h1>
+              <p className="text-blue-200 text-sm mt-2">
+                Manage the internal-mail awareness simulation and review employee results.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              <HeroStat value={results.length} label="Employees Enrolled" />
+              <HeroStat value={templates.length} label="Total Emails" />
+              <HeroStat value={totalPhishing} label="Phishing Emails" yellow />
+              <HeroStat value={compromisedCount} label="Employees Compromised" yellow />
+            </div>
           </div>
         </div>
       </section>
@@ -430,9 +447,9 @@ export default function AdminDashboardPage() {
 
 function HeroStat({ value, label, yellow = false }) {
   return (
-    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-5 py-4 text-center">
-      <p className={`text-3xl font-bold hg ${yellow ? "text-yellow-300" : "text-white"}`}>{value}</p>
-      <p className="text-blue-200 text-xs font-semibold uppercase tracking-wide mt-1">{label}</p>
+    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-1.5 text-center">
+      <p className={`text-base font-bold hg ${yellow ? "text-yellow-300" : "text-white"}`}>{value}</p>
+      <p className="text-blue-200 text-[10px] font-semibold uppercase tracking-wide">{label}</p>
     </div>
   );
 }

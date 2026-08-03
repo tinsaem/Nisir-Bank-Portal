@@ -575,22 +575,37 @@ export default function InternalEmailPage() {
                 <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
                   <span className="material-symbols-outlined text-3xl text-blue-600">mark_email_unread</span>
                 </div>
-                <h2 className="hg text-xl font-bold text-gray-900 mb-2">
+                <h2 className="hg text-xl font-bold text-gray-900 mb-5">
                   You have {visibleEmails.length} email{visibleEmails.length !== 1 ? "s" : ""} to review
                 </h2>
-                <p className="text-sm text-gray-500 max-w-md leading-relaxed">
-                  This inbox checks how well you recognize and handle everyday internal communications, and
-                  measures your performance in doing so. Treat every message as you would if you were really
-                  an employee of Nisir Bank S.C. — read each one carefully, and reply, click, approve, or
-                  decline only as our Information Security Policies would direct.
-                </p>
-                <p lang="am" className="text-sm text-gray-500 max-w-md leading-relaxed mt-3">
-                  ይህ የገቢ መልእክት ሳጥን የዕለት ተዕለት ውስጣዊ ግንኙነቶችን ምን ያህል እንደሚያውቁ እና እንደሚይዙ ይፈትሻል፣ እና ይህን
-                  በማድረግዎ አፈጻጸምዎን ይለካል። የኒሲር ባንክ ኤስ.ሲ. ሰራተኛ ቢሆኑ ኖሮ እያንዳንዱን መልእክት እንደፈለጉት ይያዙት -
-                  እያንዳንዱን መልእክት በጥንቃቄ ያንብቡ፣ እና የመረጃ ደህንነት መመሪያዎቻችን እንደሚመሩት ብቻ ምላሽ ይስጡ፣ ጠቅ ያድርጉ፣
-                  ያጽድቁ ወይም ውድቅ ያድርጉ።
-                </p>
-                <p className="text-xs text-gray-400 mt-4">
+
+                <div
+                  className="w-full max-w-xl rounded-2xl border border-blue-100 p-6 sm:p-7 text-left"
+                  style={{ background: "linear-gradient(160deg, #f5f9ff 0%, #ffffff 55%, #fbfdff 100%)" }}
+                >
+                  <p className="text-base text-gray-600 leading-relaxed" style={{ textAlign: "justify" }}>
+                    This inbox tests how well you recognize and respond to everyday internal communications.
+                    Treat every message as though you were an actual employee of Nisir Bank S.C. — read each
+                    one carefully and act on it appropriately, in accordance with the Nisir Bank Information
+                    Security Policies (ISP). You can find the Nisir Bank ISP in the top section for reference.
+                    We also recommend completing the self-check before acting on any of the emails.
+                  </p>
+
+                  <div className="h-px bg-gray-100 my-5" />
+
+                  <p
+                    lang="am"
+                    className="text-base text-gray-600 leading-loose"
+                    style={{ textAlign: "justify" }}
+                  >
+                    እነዚ መልክቶች የንስር ባንክ ሰራተኞች ይሄን ፖርታል ከመጠቀም ጋር የተያያዙ ናቸው። ለእያንዳንዱን መልእክት እራስዎን ልክ እንደ
+                    ንስር ባንክ ሰራተኛ አድርገው በመውስድ በጥንቃቄ ያንብቡ እና በንስር ባንክ የመረጃ ደህንነት ፖሊሲዎች መሠረት በአግባቡ ተገቢውን
+                    ምላሽ ይስጡ ፡፡ ለማጣቀሻ ከላይኛው ክፍል የኒሲር ባንክ የኢንፎርሜሽኝ ሴኩሪቲ ፖሊሲ ማግኘት ይችላሉ። እንዲሁም በማንኛውም
+                    ኢሜይሎች ላይ እርምጃ ከመውሰድዎ በፊት ከፖሊሲ ጋር የተያያዙ ጥያቄዎችን እንዲያጠናቅቁ እንመክራለን።
+                  </p>
+                </div>
+
+                <p className="text-xs text-gray-400 mt-5">
                   Select a message from the list on the left to begin.
                 </p>
               </div>
