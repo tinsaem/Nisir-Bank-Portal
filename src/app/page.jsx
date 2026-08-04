@@ -306,6 +306,9 @@ function HeroCopy() {
       <h1 className="hg text-hero text-5xl xl:text-6xl font-bold text-white mb-6">
         Nisir Bank S.C.
         <br />
+        <span lang="am" className="block text-4xl xl:text-5xl font-semibold text-white mt-1">
+          <span className="tracking-wide">ንስር ባንክ</span> አ.ማ
+        </span>
         <span className="gradient-text">Opens Its Doors</span>
       </h1>
 
