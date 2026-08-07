@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 const BLANK_CHOICE = () => ({ text: "", isCorrect: false });
 const BLANK_FORM   = () => ({ question: "", explanation: "", choices: [BLANK_CHOICE(), BLANK_CHOICE(), BLANK_CHOICE(), BLANK_CHOICE()] });
@@ -35,11 +36,11 @@ export default function AdminPolicyCheckPage() {
   const [attemptsLoading, setAttemptsLoading] = useState(false);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) { router.replace("/"); return; }
-    const parsed = JSON.parse(stored);
-    if (parsed.role !== "ADMIN") { router.replace("/employee_dashboard"); return; }
-    setAccount(parsed);
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) { router.replace("/"); return; }
+      if (parsed.role !== "ADMIN") { router.replace("/employee_dashboard"); return; }
+      setAccount(parsed);
+    });
   }, [router]);
 
   useEffect(() => { if (account) fetchQuestions(); }, [account]);

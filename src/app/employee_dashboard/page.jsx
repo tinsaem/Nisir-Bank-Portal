@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import EmployeeNav from "@/components/EmployeeNav";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 const MOCK_STATS = {
   branch: "Addis Ababa",
@@ -41,13 +42,13 @@ export default function EmployeeDashboardPage() {
   const [unreadEmailCount, setUnreadEmailCount] = useState(0);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) {
-      router.replace("/");
-      return;
-    }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is unavailable during SSR, so this can only be read post-mount
-    setAccount(JSON.parse(stored));
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) {
+        router.replace("/");
+        return;
+      }
+      setAccount(parsed);
+    });
   }, [router]);
 
   useEffect(() => {

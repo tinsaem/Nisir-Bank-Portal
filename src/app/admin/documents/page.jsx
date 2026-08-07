@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 const CATEGORIES = [
   { value: "policy",    label: "Policy",    icon: "policy",      color: "text-blue-700",    bg: "bg-blue-50" },
@@ -42,12 +43,11 @@ export default function AdminDocumentsPage() {
   const fileRef = useRef(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) { router.replace("/"); return; }
-    const parsed = JSON.parse(stored);
-    if (parsed.role !== "ADMIN") { router.replace("/employee_dashboard"); return; }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAccount(parsed);
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) { router.replace("/"); return; }
+      if (parsed.role !== "ADMIN") { router.replace("/employee_dashboard"); return; }
+      setAccount(parsed);
+    });
   }, [router]);
 
   useEffect(() => {

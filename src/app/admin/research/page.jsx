@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 const GROUP_ROW_COLOR = {
   gain: "bg-emerald-50/60",
@@ -41,18 +42,17 @@ export default function ResearchDashboardPage() {
   const [tab, setTab] = useState("matrix");
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) {
-      router.replace("/");
-      return;
-    }
-    const parsed = JSON.parse(stored);
-    if (parsed.role !== "ADMIN") {
-      router.replace("/employee_dashboard");
-      return;
-    }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is unavailable during SSR, so this can only be read post-mount
-    setAccount(parsed);
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) {
+        router.replace("/");
+        return;
+      }
+      if (parsed.role !== "ADMIN") {
+        router.replace("/employee_dashboard");
+        return;
+      }
+      setAccount(parsed);
+    });
   }, [router]);
 
   if (!account) {
@@ -157,7 +157,7 @@ function MatrixTab() {
             <Th k="employeeId">Participant</Th>
             <Th k="group">Group</Th>
             {data.phishingEmails.map((pe) => (
-              <th key={pe.id} colSpan={4} className="py-2 px-2 text-[10.5px] uppercase text-gray-500 text-center border-l border-gray-100">
+              <th key={pe.id} colSpan={3} className="py-2 px-2 text-[10.5px] uppercase text-gray-500 text-center border-l border-gray-100">
                 #{pe.sequenceNumber} ({pe.phishingLevel})
               </th>
             ))}
@@ -172,8 +172,7 @@ function MatrixTab() {
             {data.phishingEmails.map((pe) => (
               <Fragment key={pe.id}>
                 <th className="border-l border-gray-100 px-1">Open</th>
-                <th className="px-1">DV1</th>
-                <th className="px-1">DV2</th>
+                <th className="px-1">Phished</th>
                 <th className="px-1">Sec</th>
               </Fragment>
             ))}
@@ -197,9 +196,6 @@ function MatrixTab() {
                     </td>
                     <td className="text-center">
                       <Pill value={cell.dv1Clicked} />
-                    </td>
-                    <td className="text-center">
-                      <Pill value={cell.dv2Submitted} />
                     </td>
                     <td className="text-center text-gray-400 text-xs">
                       {cell.timeOnEmailBeforeClickSeconds ?? "—"}

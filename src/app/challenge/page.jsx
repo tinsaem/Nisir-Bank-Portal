@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import EmployeeNav from "@/components/EmployeeNav";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 // ── Assessment catalogue ────────────────────────────────────────────────────
 const ASSESSMENTS = [
@@ -154,12 +155,11 @@ export default function ChallengePage() {
   const [scores, setScores] = useState({});
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) { router.replace("/"); return; }
-    const parsed = JSON.parse(stored);
-    if (parsed.role === "ADMIN") { router.replace("/admin_dashboard"); return; }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAccount(parsed);
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) { router.replace("/"); return; }
+      if (parsed.role === "ADMIN") { router.replace("/admin_dashboard"); return; }
+      setAccount(parsed);
+    });
   }, [router]);
 
   if (!account) {

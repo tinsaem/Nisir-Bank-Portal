@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import EmployeeNav from "@/components/EmployeeNav";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 const DEPARTMENTS = [
   { key: "it",         label: "IT & Digital",      color: "#6366f1", bg: "#eef2ff" },
@@ -178,9 +179,10 @@ export default function LeaderboardPage() {
   const [tab, setTab] = useState("overall");
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) { router.replace("/"); return; }
-    setAccount(JSON.parse(stored));
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) { router.replace("/"); return; }
+      setAccount(parsed);
+    });
   }, [router]);
 
   if (!account) {

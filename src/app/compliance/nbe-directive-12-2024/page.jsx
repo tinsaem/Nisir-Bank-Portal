@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from "react";
 import PortalPageShell from "@/components/PortalPageShell";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 export default function NbeDirectivePage() {
   const [employeeId, setEmployeeId] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (stored) setEmployeeId(JSON.parse(stored).employeeId || "");
+    loadCurrentUser().then((parsed) => {
+      if (parsed) setEmployeeId(parsed.employeeId || "");
+    });
   }, []);
 
   if (acknowledged) {

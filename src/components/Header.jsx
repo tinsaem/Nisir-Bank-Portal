@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 export default function Header() {
   const pathname = usePathname();
@@ -12,11 +13,9 @@ export default function Header() {
   const [account, setAccount] = useState(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (stored) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is unavailable during SSR, so this can only be read post-mount
-      setAccount(JSON.parse(stored));
-    }
+    loadCurrentUser().then((parsed) => {
+      if (parsed) setAccount(parsed);
+    });
   }, []);
 
   if (pathname === "/") return null;

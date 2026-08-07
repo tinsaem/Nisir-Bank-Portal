@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import EmployeeNav from "@/components/EmployeeNav";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 const TAG_STYLES = {
   security: { bg: "bg-rose-50", text: "text-rose-600", icon: "shield" },
@@ -87,13 +88,13 @@ export default function InternalEmailPage() {
   const [quizLoading,    setQuizLoading]    = useState(false);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) {
-      router.replace("/");
-      return;
-    }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is unavailable during SSR, so this can only be read post-mount
-    setAccount(JSON.parse(stored));
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) {
+        router.replace("/");
+        return;
+      }
+      setAccount(parsed);
+    });
   }, [router]);
 
   useEffect(() => {
@@ -1028,6 +1029,41 @@ export default function InternalEmailPage() {
   );
 }
 
+// The bank's real domains. Links pointing here are resolved to an in-app,
+// session-preserving route instead of a real cross-origin navigation — even
+// if an admin typed the full https://nisirbank.com.et/... URL into an email
+// body. Deliberately does NOT match lookalike/spoofed domains used by the
+// phishing-simulation emails (e.g. nisirbank-it.com) — those must keep
+// behaving as genuine external navigation for the training to work.
+const BANK_HOSTS = new Set(["nisirbank.com.et", "www.nisirbank.com.et", "nisirbank.com", "www.nisirbank.com"]);
+
+function isInternalHost(hostname) {
+  const host = hostname.toLowerCase();
+  if (BANK_HOSTS.has(host)) return true;
+  if (typeof window !== "undefined" && host === window.location.hostname.toLowerCase()) return true;
+  return false;
+}
+
+// Returns an in-app path ("/foo?bar#baz") if the link is internal, or null
+// if it's genuinely external. Already-relative paths pass through unchanged.
+function toInternalPath(rawUrl) {
+  if (rawUrl.startsWith("/")) return rawUrl;
+  try {
+    const url = new URL(rawUrl.startsWith("www.") ? `https://${rawUrl}` : rawUrl);
+    // A URL with embedded userinfo (e.g. "https://itsecurity@nisirbank.com",
+    // almost always a mistyped email address) is never a real in-app link —
+    // let it fall through to plain external navigation instead of resolving
+    // to the site root.
+    if (url.username) return null;
+    if (isInternalHost(url.hostname) && url.pathname !== "/") {
+      return `${url.pathname}${url.search}${url.hash}`;
+    }
+  } catch {
+    // Not a parseable absolute URL — treat as external/unresolvable.
+  }
+  return null;
+}
+
 function InlineAction({ email, onTakeLinkAction }) {
   const isDone = email.actionStatus === "done";
   const label = isDone ? `${email.actionLabel} ✓` : email.actionLabel;
@@ -1036,16 +1072,13 @@ function InlineAction({ email, onTakeLinkAction }) {
   }`;
 
   if (email.href && !isDone) {
+    const internalPath = toInternalPath(email.href);
+    const href = internalPath ?? email.href;
+    const Tag = internalPath ? Link : "a";
     return (
-      <Link
-        href={email.href}
-        onClick={onTakeLinkAction}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={className}
-      >
+      <Tag href={href} onClick={onTakeLinkAction} target="_blank" rel="noopener noreferrer" className={className}>
         {label}
-      </Link>
+      </Tag>
     );
   }
 
@@ -1061,17 +1094,14 @@ const URL_REGEX = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/g;
 function linkifyText(text, keyPrefix) {
   return text.split(URL_REGEX).map((part, i) => {
     if (i % 2 === 0) return part;
-    const href = part.startsWith("www.") ? `https://${part}` : part;
+    const className = "font-semibold text-blue-700 underline decoration-[1.5px] hover:text-blue-800";
+    const internalPath = toInternalPath(part);
+    const href = internalPath ?? (part.startsWith("www.") ? `https://${part}` : part);
+    const Tag = internalPath ? Link : "a";
     return (
-      <a
-        key={`${keyPrefix}-${i}`}
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="font-semibold text-blue-700 underline decoration-[1.5px] hover:text-blue-800"
-      >
+      <Tag key={`${keyPrefix}-${i}`} href={href} target="_blank" rel="noopener noreferrer" className={className}>
         {part}
-      </a>
+      </Tag>
     );
   });
 }

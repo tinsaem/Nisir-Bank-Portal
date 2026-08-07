@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 /* ─────────────────────────────────────────────────────────────────
    Constants
@@ -57,6 +58,17 @@ export default function Home() {
   const [loginLoad, setLoginLoad] = useState(false);
   const [regLoad, setRegLoad]     = useState(false);
   const [particles, setParticles] = useState([]);
+
+  useEffect(() => {
+    // If this browser already has a valid session (logged in via another
+    // tab, or a link opened this login page fresh), skip straight to the
+    // right dashboard instead of showing the login form again.
+    loadCurrentUser().then((user) => {
+      if (user) {
+        window.location.href = user.role === "ADMIN" ? "/admin_dashboard" : "/employee_dashboard";
+      }
+    });
+  }, []);
 
   useEffect(() => {
     setParticles(

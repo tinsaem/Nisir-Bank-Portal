@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import EmployeeNav from "@/components/EmployeeNav";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 // ── Certification catalogue ───────────────────────────────────────────────────
 const CERTS = [
@@ -300,11 +301,11 @@ export default function CertificatePage() {
   const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) { router.replace("/"); return; }
-    const parsed = JSON.parse(stored);
-    if (parsed.role === "ADMIN") { router.replace("/admin_dashboard"); return; }
-    setUser(parsed);
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) { router.replace("/"); return; }
+      if (parsed.role === "ADMIN") { router.replace("/admin_dashboard"); return; }
+      setUser(parsed);
+    });
   }, [router]);
 
   function openModal(cert) {

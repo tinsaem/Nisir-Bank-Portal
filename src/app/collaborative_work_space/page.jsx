@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import EmployeeNav from "@/components/EmployeeNav";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 // ── Category metadata ───────────────────────────────────────────────────────
 const CATEGORY_META = {
@@ -96,12 +97,11 @@ export default function CollaborativeWorkSpace() {
 
   // Auth
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) { router.replace("/"); return; }
-    const parsed = JSON.parse(stored);
-    if (parsed.role === "ADMIN") { router.replace("/admin_dashboard"); return; }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAccount(parsed);
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) { router.replace("/"); return; }
+      if (parsed.role === "ADMIN") { router.replace("/admin_dashboard"); return; }
+      setAccount(parsed);
+    });
   }, [router]);
 
   const fetchDiscussions = useCallback(async () => {

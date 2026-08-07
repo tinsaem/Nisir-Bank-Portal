@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { loadCurrentUser } from "@/lib/currentUser";
 
 const ACTION_TYPES = ["info", "link", "reply", "credential", "approve", "attachment"];
 
@@ -45,18 +46,17 @@ export default function AdminDashboardPage() {
   const [resetMessage, setResetMessage] = useState("");
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("currentUser");
-    if (!stored) {
-      router.replace("/");
-      return;
-    }
-    const parsed = JSON.parse(stored);
-    if (parsed.role !== "ADMIN") {
-      router.replace("/employee_dashboard");
-      return;
-    }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is unavailable during SSR, so this can only be read post-mount
-    setAccount(parsed);
+    loadCurrentUser().then((parsed) => {
+      if (!parsed) {
+        router.replace("/");
+        return;
+      }
+      if (parsed.role !== "ADMIN") {
+        router.replace("/employee_dashboard");
+        return;
+      }
+      setAccount(parsed);
+    });
   }, [router]);
 
   function refetchAll() {
