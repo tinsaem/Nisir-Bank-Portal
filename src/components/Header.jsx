@@ -54,8 +54,12 @@ export default function Header() {
     return pathname === href;
   }
 
-  function handleLogout() {
-    // Replace this later with your real auth logout logic.
+  async function handleLogout() {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch {
+      // best-effort
+    }
     sessionStorage.removeItem("currentUser");
     router.push("/");
   }
