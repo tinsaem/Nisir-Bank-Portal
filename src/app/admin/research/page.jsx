@@ -253,7 +253,7 @@ function SummaryTab() {
             {data.perEmailSummary.map((pe) => (
               <Fragment key={pe.emailId}>
                 <tr className="border-b border-gray-50">
-                  <td rowSpan={3} className="py-2 px-3 font-semibold text-gray-800 align-top">
+                  <td rowSpan={2} className="py-2 px-3 font-semibold text-gray-800 align-top">
                     #{pe.sequenceNumber} ({pe.phishingLevel})
                     <p className="text-[11px] text-gray-400 font-normal mt-0.5 max-w-[220px]">{pe.subject}</p>
                   </td>
@@ -267,8 +267,8 @@ function SummaryTab() {
                     {pe.total.opened} ({pe.total.openedPct}%)
                   </td>
                 </tr>
-                <tr className="border-b border-gray-50">
-                  <td className="py-1.5 px-3 text-gray-600">DV1 Clicked</td>
+                <tr className="border-b border-gray-100">
+                  <td className="py-1.5 px-3 text-gray-600">Phished</td>
                   {groups.map((g) => (
                     <td key={g} className="py-1.5 px-3 text-center">
                       {pe.byGroup[g].dv1Clicked} ({pe.byGroup[g].dv1ClickedPct}%)
@@ -276,17 +276,6 @@ function SummaryTab() {
                   ))}
                   <td className="py-1.5 px-3 text-center font-semibold">
                     {pe.total.dv1Clicked} ({pe.total.dv1ClickedPct}%)
-                  </td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-1.5 px-3 text-gray-600">DV2 Submitted</td>
-                  {groups.map((g) => (
-                    <td key={g} className="py-1.5 px-3 text-center">
-                      {pe.byGroup[g].dv2Submitted} ({pe.byGroup[g].dv2SubmittedPct}%)
-                    </td>
-                  ))}
-                  <td className="py-1.5 px-3 text-center font-semibold">
-                    {pe.total.dv2Submitted} ({pe.total.dv2SubmittedPct}%)
                   </td>
                 </tr>
               </Fragment>

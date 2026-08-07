@@ -154,7 +154,7 @@ export default function AdminDashboardPage() {
   async function resetExperiment() {
     if (
       !window.confirm(
-        "Reset the experiment? This wipes every employee's read/reply/click progress on all emails, plus their ISP self-check quiz attempts."
+        "Reset the experiment? This wipes every employee's read/reply/click progress on all emails, their ISP self-check quiz attempts, and their live session status."
       )
     )
       return;
@@ -163,7 +163,7 @@ export default function AdminDashboardPage() {
     const data = await res.json();
     if (data.success) {
       setResetMessage(
-        `Reset complete — cleared ${data.deletedCount} delivery records and ${data.deletedAttemptCount} self-check attempts.`
+        `Reset complete — cleared ${data.deletedCount} delivery records, ${data.deletedAttemptCount} self-check attempts, and all live session status.`
       );
       refetchAll();
     }

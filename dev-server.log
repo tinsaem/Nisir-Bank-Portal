@@ -13,3 +13,6 @@
  GET /api/me 200 in 2.2s (next.js: 2.2s, application-code: 62ms)
  POST /api/logout 200 in 691ms (next.js: 661ms, application-code: 30ms)
  GET /api/me 401 in 49ms (next.js: 26ms, application-code: 23ms)
+○ Compiling / ...
+ GET / 200 in 14.0s (next.js: 13.8s, application-code: 215ms)
+ GET / 200 in 64ms (next.js: 5ms, application-code: 59ms)

@@ -19,5 +19,12 @@ export async function POST(req) {
   // restarts fresh. Question/choice content is untouched.
   const { count: attemptCount } = await prisma.policyAttempt.deleteMany({});
 
+  // Clears session-start/completion timestamps so the Live Sessions view
+  // (Research Dashboard → Live tab) stops showing stale "in progress" /
+  // "complete" rows for employees who already went through the experiment.
+  await prisma.employeeAccount.updateMany({
+    data: { sessionStartedAt: null, sessionCompletedAt: null },
+  });
+
   return NextResponse.json({ success: true, deletedCount: count, deletedAttemptCount: attemptCount });
 }
